@@ -1,0 +1,7 @@
+# Normalise line endings across machines
+* text=auto eol=lf
+
+# Binary assets
+*.mp4 binary
+*.png binary
+*.jpg binary
