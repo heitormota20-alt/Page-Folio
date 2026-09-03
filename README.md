@@ -12,10 +12,32 @@ Tailwind v4 é instalado com `tailwindcss @tailwindcss/vite`, o plugin `tailwind
 entra em `vite.config.ts` e o CSS começa com `@import 'tailwindcss';`. **Não existe
 `tailwind.config.js` nem PostCSS.**
 
+## Estrutura
+
+```
+Page-Folio/
+├── assets/                       # material bruto — NÃO entra no build
+│   ├── video-source/
+│   │   ├── character-turning-head.mp4    # fonte (download do Streamable)
+│   │   └── character-turning-head.webm   # backup web (VP9), caso o link expire
+│   ├── frames/                   # primeiro / último frame do clipe
+│   └── design/                   # mockup da home
+├── public/
+│   └── personagem.mp4            # vídeo all-intra servido pelo site
+├── scripts/prepare-video.mjs     # gera public/personagem.mp4
+├── src/
+│   ├── components/               # ScrubVideo, Navbar, Hero, Sections
+│   ├── hooks/                    # useVideoScrub, useLenis
+│   ├── App.tsx · main.tsx · index.css
+└── index.html · vite.config.ts · tsconfig*.json
+```
+
 ## Passo 0 — o vídeo
 
-Origem: `Character_turning_head_in_surprise_202609022142.mp4`
+Origem: `assets/video-source/character-turning-head.mp4`
 (idêntico ao arquivo de https://streamable.com/t1789u — 772.166 bytes, o "original").
+Ao lado, `character-turning-head.webm` (VP9, ~166 KB) é o backup caso o link
+assinado do Streamable expire.
 
 Reprocessado para **all-intra** (todo frame é keyframe) com o binário estático do
 pacote `ffmpeg-static`, via `require('ffmpeg-static')`:
@@ -37,8 +59,8 @@ scrub não engasga reconstruindo GOP.
 | Resolução | 1280×720, yuv420p |
 
 Pontas mortas: **nenhuma**. Os dois extremos do clipe já são conteúdo (o personagem
-está em quadro no primeiro e no último frame — ver `Frame inicial.png` / `Frame Final.png`),
-então não há trecho estático para aparar com `-ss`/`-to -c copy`.
+está em quadro no primeiro e no último frame — ver `assets/frames/`), então não há
+trecho estático para aparar com `-ss`/`-to -c copy`.
 
 O vídeo é servido de `public/` (mesma origem). Nunca de URL externa.
 

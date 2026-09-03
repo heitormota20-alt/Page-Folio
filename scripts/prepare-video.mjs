@@ -5,8 +5,10 @@
  * cada `video.currentTime = t` seja um seek barato, sem reconstruir GOP.
  * Sem isso o scrub engasga.
  *
- *   node scripts/prepare-video.mjs [entrada.mp4]
+ *   node scripts/prepare-video.mjs [entrada]
  *
+ * Entrada padrão: assets/video-source/character-turning-head.mp4
+ *   (o .webm ao lado é backup, caso o link do Streamable expire)
  * Saída: public/personagem.mp4  (mesma origem — nunca URL externa)
  */
 import { execFileSync } from 'node:child_process'
@@ -20,7 +22,7 @@ const ffmpeg = require('ffmpeg-static')
 const ffprobe = require('ffprobe-static').path
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const input = resolve(root, process.argv[2] ?? 'Character_turning_head_in_surprise_202609022142.mp4')
+const input = resolve(root, process.argv[2] ?? 'assets/video-source/character-turning-head.mp4')
 const output = resolve(root, 'public/personagem.mp4')
 
 if (!existsSync(input)) {
