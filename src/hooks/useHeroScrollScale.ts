@@ -24,16 +24,31 @@ export function useHeroScrollScale(
       el.style.transform = `scale(${1 - t * (1 - TARGET_SCALE)})`
       el.style.borderRadius = `${t * TARGET_RADIUS}px`
 
-      // Overlay de cor: sobe até 0.55 (avatar continua visível)
+      // Overlay de cor — sobe até 0.55
       if (overlayRef?.current) {
         overlayRef.current.style.opacity = `${t * 0.55}`
       }
 
-      // Texto: começa a sumir em t=0.35, está zerado em t=0.85
+      // Texto: stagger de baixo para cima — cada filho some em sequência
       if (textRef?.current) {
-        const tText = Math.min(Math.max((t - 0.35) / 0.5, 0), 1)
-        textRef.current.style.opacity = `${1 - tText}`
-        textRef.current.style.pointerEvents = tText > 0.99 ? 'none' : ''
+        const children = Array.from(textRef.current.children)
+        const total = children.length
+
+        children.forEach((child, i) => {
+          // order 0 = elemento de baixo (último filho), some primeiro
+          const order = total - 1 - i
+          const fadeStart = 0.22 + order * 0.13   // stagger de 0.13 entre elementos
+          const fadeEnd   = fadeStart + 0.36
+
+          const progress = Math.min(Math.max((t - fadeStart) / (fadeEnd - fadeStart), 0), 1)
+          const ease = progress * (2 - progress)  // ease-out no próprio elemento
+
+          ;(child as HTMLElement).style.opacity   = `${1 - ease}`
+          ;(child as HTMLElement).style.transform = `translateY(${-ease * 22}px)`
+        })
+
+        // Remove pointer-events quando todos someram
+        textRef.current.style.pointerEvents = t >= 0.9 ? 'none' : ''
       }
     }
 
