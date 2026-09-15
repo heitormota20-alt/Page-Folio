@@ -1,13 +1,16 @@
 import { useEffect } from 'react'
 import Lenis from 'lenis'
 
-/** Smooth scrolling, driven by a single rAF loop. Torn down cleanly for StrictMode. */
+export const lenisRef: { current: Lenis | null } = { current: null }
+
 export function useLenis() {
   useEffect(() => {
     const lenis = new Lenis({
       lerp: 0.1,
       smoothWheel: true,
     })
+
+    lenisRef.current = lenis
 
     let frame = 0
     const raf = (time: number) => {
@@ -19,6 +22,7 @@ export function useLenis() {
     return () => {
       cancelAnimationFrame(frame)
       lenis.destroy()
+      lenisRef.current = null
     }
   }, [])
 }

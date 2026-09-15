@@ -15,11 +15,11 @@ export function ScrubVideo() {
   return (
     <video
       ref={ref}
-      src="/personagem.mp4"
+      src="/Personagem_Definitivo_scrub.mp4"
       muted
       playsInline
       preload="auto"
-      className="fixed inset-0 z-0 h-full w-full object-cover [object-position:60%_20%] sm:[object-position:64%_center]"
+      className="absolute inset-0 z-0 h-full w-full object-cover [object-position:60%_20%] sm:[object-position:64%_center]"
     />
   )
 }

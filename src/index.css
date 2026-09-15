@@ -20,6 +20,15 @@ body {
   font-family: var(--font-heading);
 }
 
+@keyframes marquee-left {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes marquee-right {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+
 /* Lenis smooth-scroll base styles (no separate CSS import needed). */
 html.lenis,
 html.lenis body {
