@@ -171,8 +171,8 @@ ao vivo num `<canvas>` por `src/hooks/useTopoLines.ts`:
 
 Não há bloco opaco subindo sobre a segunda dobra: o fundo (cor + curvas de nível)
 é um só, fixo, para a página inteira, e as seções não têm fundo próprio. Depois do
-pouso do card (`SCALE_END`), o card (`useHeroScrollScale`) e o letreiro
-(`useScrollExit`) sobem junto com a página, e "No que eu posso te ajudar" entra
+pouso do card (`SCALE_END`), o card (`useHeroScrollScale`) e o letreiro (`Marquee`, em
+Anton como o "PORTFÓLIO"; `useScrollExit`) sobem junto com a página, e "No que eu posso te ajudar" entra
 logo abaixo.
 
 **Cores depois da primeira dobra:** `--color-page` (fundo) e `--color-ink` (texto,
@@ -206,8 +206,8 @@ pílulas (`usePillPhysics.ts`, sem biblioteca). É uma **cena presa na tela** (p
    **cursores coloridos** (estilo multiplayer do Figma, etiquetas em `CURSORS`)
    entram, agarram cada pílula — as de cima da pilha primeiro —, levam até o seu
    lugar no layout final endireitando-a, soltam e saem; vários ao mesmo tempo;
-3. termina com as 6 pílulas organizadas, 3 em cima e 3 embaixo (`ROWS`),
-   alinhadas ao título — o layout é feito de `[data-slot]` invisíveis, então se
+3. termina com as 6 pílulas organizadas, 3 em cima e 3 embaixo (`ROWS`), num
+   layout centralizado (título, pílulas, texto e botão) — o layout é feito de `[data-slot]` invisíveis, então se
    ajusta à tela (no celular as fileiras quebram) —, e, com um respiro, o texto e
    o botão "Agende uma conversa" sobem por baixo delas (`REVEAL_*`).
 

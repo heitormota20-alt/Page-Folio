@@ -1,3 +1,4 @@
+// Letreiro da segunda dobra — em Anton, a mesma tipografia do "PORTFÓLIO" da home.
 const REPEAT = 4
 
 interface MarqueeProps {
@@ -16,12 +17,12 @@ export function Marquee({ text, speed = 20, direction = 'left' }: MarqueeProps) 
         className="inline-flex"
         style={{ animation: `${anim} ${speed}s linear infinite` }}
       >
-        <span className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-none text-ink/20 uppercase">
+        <span className="font-['Anton',sans-serif] text-[clamp(3.5rem,10vw,9rem)] leading-none tracking-[0.01em] text-ink/20 uppercase">
           {content}
         </span>
         <span
           aria-hidden="true"
-          className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-none text-ink/20 uppercase"
+          className="font-['Anton',sans-serif] text-[clamp(3.5rem,10vw,9rem)] leading-none tracking-[0.01em] text-ink/20 uppercase"
         >
           {content}
         </span>

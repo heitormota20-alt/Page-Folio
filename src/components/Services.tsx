@@ -25,7 +25,7 @@ const CURSORS = [
 
 /** Visual da pílula — o mesmo nas pílulas soltas e nos "lugares" do layout final. */
 const PILL =
-  "rounded-full border-[1.5px] border-[#0b1a24] bg-white px-[1.2em] py-[0.4em] font-['Instrument_Serif',serif] text-[length:clamp(1.3rem,3vw,3.4rem)] leading-none whitespace-nowrap text-[#0b1a24]"
+  "rounded-full border-[1.5px] border-[#0b1a24] bg-white px-[1.2em] py-[0.4em] font-['Instrument_Serif',serif] text-[length:clamp(1.1rem,2.3vw,2.6rem)] leading-none whitespace-nowrap text-[#0b1a24]"
 
 /** Seta de cursor + etiqueta colorida. A ponta da seta é o canto (0, 0) do elemento. */
 function Cursor({ label, color, ink }: (typeof CURSORS)[number]) {
@@ -52,8 +52,8 @@ function Cursor({ label, color, ink }: (typeof CURSORS)[number]) {
  * É uma cena presa na tela (palco de 320vh): as pílulas caem e se empilham com
  * física (dá para arrastar); conforme a rolagem avança, cursores coloridos entram,
  * agarram cada pílula — as de cima da pilha primeiro — e a levam ao seu lugar no
- * layout final (3 em cima, 3 embaixo, alinhadas ao título); por fim o texto e o
- * botão sobem por baixo delas. Rolando de volta, tudo se desfaz.
+ * layout final (3 em cima, 3 embaixo, centralizado); por fim o texto e o botão
+ * sobem por baixo delas. Rolando de volta, tudo se desfaz.
  * Ver usePillPhysics.
  *
  * As cores vêm do tema da página (text-ink / bg-ink / text-page): quando a
@@ -72,7 +72,7 @@ export function Services() {
       <div ref={sceneRef} className="relative h-[320vh] motion-reduce:h-auto">
         <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden px-6 pt-[16vh] sm:px-10 lg:px-16 motion-reduce:static motion-reduce:h-auto motion-reduce:min-h-[100svh]">
           <header>
-            <h2 className="text-ink">
+            <h2 className="text-center text-ink">
               <span className="block font-['Anton',sans-serif] text-[length:clamp(3rem,8.6vw,9.5rem)] leading-[0.95] tracking-[-0.005em] uppercase">
                 No que eu posso
               </span>
@@ -101,11 +101,11 @@ export function Services() {
           >
             <div
               ref={layoutRef}
-              className="absolute inset-0 flex flex-col justify-end pb-[7vh] motion-reduce:static motion-reduce:py-16"
+              className="absolute inset-0 flex flex-col items-center justify-end pb-[7vh] motion-reduce:static motion-reduce:py-16"
             >
-              <div aria-hidden="true" className="invisible flex flex-col gap-3 sm:gap-4 motion-reduce:visible">
+              <div aria-hidden="true" className="invisible flex flex-col items-center gap-3 sm:gap-4 motion-reduce:visible">
                 {ROWS.map((row) => (
-                  <div key={row[0]} className="flex flex-wrap gap-3 sm:gap-4">
+                  <div key={row[0]} className="flex flex-wrap justify-center gap-3 sm:gap-4">
                     {row.map((s) => (
                       <span key={s} data-slot="" className={PILL}>
                         {s}
@@ -115,8 +115,8 @@ export function Services() {
                 ))}
               </div>
 
-              <div ref={ctaRef} className="mt-[5vh] max-w-[26rem]">
-                <p className="text-[13px] leading-relaxed text-ink/80 sm:text-[15px]">
+              <div ref={ctaRef} className="mt-[5vh] flex max-w-[36rem] flex-col items-center text-center">
+                <p className="text-[13px] leading-relaxed text-balance text-ink/80 sm:text-[15px]">
                   Design e experimentação em um só lugar — do primeiro teste ao produto validado,
                   com decisões guiadas por dados.
                 </p>
