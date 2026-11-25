@@ -1,4 +1,5 @@
 import { Services } from './Services'
+import { Archive } from './Archive'
 
 const PROJECTS = [
   {
@@ -39,6 +40,7 @@ export function Sections() {
     // então não há bloco opaco subindo nem corte entre a segunda dobra e as seções.
     <div className="relative z-[2] text-ink">
       <Services />
+      <Archive />
       <section id="sobre" className="border-t border-ink/10 px-6 py-24 sm:px-10 sm:py-32">
         <div className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-[1fr_1.4fr] sm:gap-16">
           <h2 className="text-[12px] font-medium tracking-[0.22em] text-ink/50 uppercase">

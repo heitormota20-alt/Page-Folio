@@ -1,4 +1,15 @@
 import { type RefObject, useEffect } from 'react'
+import { SCALE_END } from './useHeroScrollScale'
+
+/** Intensidade das linhas (opacidade do canvas) enquanto aparecem por inteiro. */
+const BASE_OPACITY = 0.14
+/**
+ * Na segunda dobra as linhas vão sumindo: inteiras até o pouso do card
+ * (SCALE_END) e apagadas por completo em FADE_OUT_END (frações de viewport de
+ * scroll). Apagadas, o desenho para.
+ */
+const FADE_OUT_START = SCALE_END
+const FADE_OUT_END = 1.0
 
 /** Tamanho da célula da grade, em px de tela (resolução das curvas). */
 const CELL = 8
@@ -207,8 +218,18 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     let frame = 0
     let last = 0
 
-    // No topo a hero cobre a tela inteira: não há fundo à vista
-    const isVisible = () => window.scrollY > 0
+    // 1 → 0 ao longo da segunda dobra (ver FADE_OUT_*)
+    const fade = () => {
+      const r = window.scrollY / (window.innerHeight || 1)
+      return 1 - Math.min(Math.max((r - FADE_OUT_START) / (FADE_OUT_END - FADE_OUT_START), 0), 1)
+    }
+    const applyFade = () => {
+      canvas.style.opacity = `${BASE_OPACITY * fade()}`
+    }
+
+    // No topo a hero cobre a tela inteira; depois da segunda dobra as linhas já
+    // sumiram — nos dois casos não há o que desenhar
+    const isVisible = () => window.scrollY > 0 && fade() > 0
 
     const loop = (now: number) => {
       frame = 0
@@ -230,6 +251,8 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     }
 
     const start = () => {
+      applyFade()
+      if (fade() === 0) return // apagadas: nada a desenhar
       if (reduceMotion) {
         settleUntil = performance.now() + 1000
         if (!frame) frame = requestAnimationFrame(still)

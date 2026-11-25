@@ -110,8 +110,11 @@ ao vivo num `<canvas>` por `src/hooks/useTopoLines.ts`:
   o conjunto desliza na diagonal (`DRIFT_X/Y`);
 - curvas de nível por marching squares; `LEVELS` / `LEVEL_GAP` controlam o
   espaçamento, `SCALE` o tamanho das formas;
-- 24 fps e só enquanto o fundo aparece (entre a hero encolher e as seções
-  cobrirem a tela). Com `prefers-reduced-motion`, um quadro parado.
+- na segunda dobra as linhas vão sumindo: inteiras até o pouso do card
+  (`SCALE_END`), apagadas em 1,0 viewport de scroll (`FADE_OUT_*`) — da terceira
+  dobra em diante o fundo é liso;
+- 24 fps e só enquanto aparecem (entre a hero começar a encolher e sumirem).
+  Com `prefers-reduced-motion`, um quadro parado.
 
 ## Fluxo contínuo e terceira seção — `src/components/Services.tsx`
 
@@ -131,6 +134,10 @@ a troca é uma transição de 0,8s de tudo que usa `bg-page` / `text-ink` (o can
 a cor a cada quadro). Volta ao azul ao rolar para cima. Títulos de seção usam
 `text-title` (`--color-title`): branco no azul, cinza quente `#84817b` no creme.
 
+As seções em cena fixa usam a base `useScrollScene`: palco alto + painel `sticky`
+de 100svh, progresso de entrada e de cena (0–1 com o painel parado), ambos com
+inércia, e `riseLines` para a subida das linhas dos títulos.
+
 A seção é uma **cena fixa na tela** (`useServicesScene`): um palco de 260vh com um
 painel `sticky` de 100svh. Enquanto o painel sobe até parar, as linhas do título
 sobem por trás das suas janelas (`overflow-hidden`). Com ele parado (160vh de
@@ -141,6 +148,17 @@ passam um pouco do ponto (ease-out-back) e assentam desencontrados (`data-y`,
 composição fica parada antes de a cena seguir. Todo o movimento tem inércia
 (`LAG`). `-mt-[40vh]` faz o título entrar logo depois do card da hero. Os
 serviços dos cards são provisórios.
+
+## Arquivos Visuais — `src/components/Archive.tsx`
+
+Cena fixa (`useArchiveScene`, palco de 320vh): o título grande e apagado
+(`text-title/45`) sobe e para no centro; com o painel parado, peças e pastas azuis
+sobem flutuando por toda a tela, cada uma no seu tempo (`delay`) e profundidade
+(`depth`: perto = maior, mais rápida, na frente do título; longe = menor, mais
+lenta, desfocada, atrás dele), com leve balanço. `-mt-[45vh]` faz o título entrar
+enquanto os cards dos serviços saem. **As peças são provisórias** (pôsteres
+abstratos): para usar as artes reais, coloque os arquivos em `public/arquivos/` e
+passe `src` em cada item de `PIECES`.
 
 **Atenção:** com "reduzir movimento" ligado no sistema (no Windows: Configurações →
 Acessibilidade → Efeitos visuais → Efeitos de animação desligado), os efeitos de
