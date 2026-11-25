@@ -6,11 +6,13 @@ import { Marquee } from './components/Marquee'
 import { TopoLines } from './components/TopoLines'
 import { useLenis } from './hooks/useLenis'
 import { useScrollLock } from './hooks/useScrollLock'
+import { usePageThemes } from './hooks/usePageTheme'
 import { useScrollExit } from './hooks/useHeroScrollScale'
 
 export default function App() {
   useLenis()
   useScrollLock()
+  usePageThemes() // tema claro/escuro por seção (data-theme)
 
   const marqueeRef = useRef<HTMLDivElement>(null)
   useScrollExit(marqueeRef)

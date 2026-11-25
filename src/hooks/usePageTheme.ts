@@ -1,21 +1,27 @@
-import { type RefObject, useEffect } from 'react'
+import { useEffect } from 'react'
 
 /**
- * Liga o tema claro da página (html.theme-light, ver index.css) quando o topo
- * do elemento sobe acima de `at` (fração da altura da tela); desliga ao voltar.
- * A troca em si é a transição das variáveis --color-page / --color-ink.
+ * Tema da página por seção. Cada seção que muda o tema leva
+ *   data-theme="light" | "dark"   e   data-theme-at="0.6"
+ * (fração da altura da tela). Vale o tema da ÚLTIMA seção marcada cujo topo já
+ * subiu acima de `data-theme-at`; antes de todas, o escuro (hero e segunda dobra).
+ * Claro = html.theme-light (ver index.css); a troca é a transição das variáveis
+ * --color-page / --color-ink / --color-title.
  */
-export function usePageTheme(ref: RefObject<HTMLElement | null>, { at = 0.4 } = {}) {
+export function usePageThemes() {
   useEffect(() => {
-    const el = ref.current
-    if (!el) return
     const root = document.documentElement
-
     let frame = 0
+
     const update = () => {
       frame = 0
-      const top = el.getBoundingClientRect().top
-      root.classList.toggle('theme-light', top < window.innerHeight * at)
+      const vh = window.innerHeight || 1
+      let theme = 'dark'
+      for (const el of document.querySelectorAll<HTMLElement>('[data-theme]')) {
+        const at = Number(el.dataset.themeAt ?? 0.5)
+        if (el.getBoundingClientRect().top < vh * at) theme = el.dataset.theme ?? theme
+      }
+      root.classList.toggle('theme-light', theme === 'light')
     }
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update)
@@ -30,5 +36,5 @@ export function usePageTheme(ref: RefObject<HTMLElement | null>, { at = 0.4 } = 
       cancelAnimationFrame(frame)
       root.classList.remove('theme-light')
     }
-  }, [ref, at])
+  }, [])
 }

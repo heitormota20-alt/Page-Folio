@@ -1,6 +1,5 @@
 import { useId, useRef } from 'react'
 import { useServicesScene } from '../hooks/useServicesScene'
-import { usePageTheme } from '../hooks/usePageTheme'
 
 // Uma linha por item — quebra fixa: "No que eu posso" / "te ajudar"
 const TITLE_LINES = ['No que eu posso', 'te ajudar']
@@ -61,14 +60,12 @@ function ServiceIcon({ from, to, shape }: { from: string; to: string; shape: Sha
  * logo depois do card da hero (sem vão vazio entre os dois).
  */
 export function Services() {
-  const sectionRef = useRef<HTMLElement>(null)
   const sceneRef = useRef<HTMLDivElement>(null)
   useServicesScene(sceneRef)
-  // tema claro quando a cena para na tela (o card da hero já saiu)
-  usePageTheme(sectionRef, { at: 0.05 })
 
   return (
-    <section ref={sectionRef} id="ajuda" className="-mt-[40vh] motion-reduce:mt-0">
+    // data-theme: tema claro quando a cena para na tela (o card da hero já saiu)
+    <section id="ajuda" data-theme="light" data-theme-at="0.05" className="-mt-[40vh] motion-reduce:mt-0">
       {/* Palco alto: 100vh de entrada + 160vh com o painel parado na tela */}
       <div ref={sceneRef} className="relative h-[260vh] motion-reduce:h-auto">
         <div className="sticky top-0 grid h-[100svh] place-items-center overflow-hidden px-6 sm:px-10 motion-reduce:static motion-reduce:h-auto motion-reduce:gap-12 motion-reduce:overflow-visible motion-reduce:py-24">

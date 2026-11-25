@@ -33,6 +33,65 @@ export function riseLines(lines: HTMLElement[], p: number, stagger = 0.22) {
   })
 }
 
+export interface FloatOptions {
+  /** Quanto da cena cada peça leva para atravessar a tela, na profundidade média. */
+  baseDuration?: number
+  /** Balanço lateral máximo (px) das peças de perto. */
+  sway?: number
+  /** Oscilação da inclinação (graus) ao longo da subida. */
+  wobble?: number
+}
+
+/**
+ * Peças que sobem flutuando pela tela ([data-piece]), cada uma no seu tempo
+ * (`data-delay`, fração da cena) e profundidade (`data-depth` 0–1: perto anda
+ * mais rápido), centradas em `data-x` (fração da largura do painel), com
+ * inclinação `data-rot` e, opcionalmente, giro `data-spin` (graus ao longo da
+ * travessia — as peças "rodopiam"). Velocidade constante: parallax.
+ */
+export function floatPieces(scene: HTMLElement, opts: FloatOptions = {}) {
+  const { baseDuration = 0.55, sway = 16, wobble = 2.5 } = opts
+  const pieces = Array.from(scene.querySelectorAll<HTMLElement>('[data-piece]')).map((el, i) => ({
+    el,
+    x: Number(el.dataset.x) || 0.5,
+    depth: Number(el.dataset.depth) || 0.5,
+    delay: Number(el.dataset.delay) || 0,
+    rot: Number(el.dataset.rot) || 0,
+    spin: Number(el.dataset.spin) || 0,
+    phase: i * 1.7,
+    w: 0,
+    h: 0,
+  }))
+  let panelW = 0
+
+  return {
+    layout() {
+      panelW = (pieces[0]?.el.offsetParent as HTMLElement | null)?.clientWidth ?? window.innerWidth
+      for (const p of pieces) {
+        p.w = p.el.offsetWidth
+        p.h = p.el.offsetHeight
+      }
+    },
+    render(prog: number, vh: number) {
+      for (const p of pieces) {
+        const duration = baseDuration / (0.7 + 0.6 * p.depth)
+        const t = (prog - p.delay) / duration
+        if (t <= 0 || t >= 1) {
+          p.el.style.visibility = 'hidden' // fora da tela: nem pinta
+          continue
+        }
+        p.el.style.visibility = 'visible'
+        // de logo abaixo da tela até sumir por cima
+        const y = (1 - t) * (vh + 40) - t * (p.h + 40)
+        const dx = Math.sin(t * Math.PI * 1.4 + p.phase) * sway * p.depth
+        const x = p.x * panelW - p.w / 2 + dx
+        const rot = p.rot + Math.sin(t * Math.PI + p.phase) * wobble + (t - 0.5) * p.spin
+        p.el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg)`
+      }
+    },
+  }
+}
+
 /**
  * Base das "cenas fixas": um palco alto (`sceneRef`) com um painel sticky de
  * 100svh dentro. Calcula os dois progressos a partir da rolagem e os suaviza com
