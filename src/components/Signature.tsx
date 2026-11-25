@@ -2,7 +2,6 @@ import { type RefObject, useEffect, useId, useRef } from 'react'
 import { SIGNATURE } from './signature-paths'
 import { useSignatureDraw } from '../hooks/useSignatureDraw'
 import { SCALE_END } from '../hooks/useHeroScrollScale'
-import { BRAND_BLUE } from './hero-layout'
 
 /** Começa a escrever logo que o card começa a encolher… */
 const DRAW_START = 0.12
@@ -24,8 +23,9 @@ function roundedRect(x: number, y: number, w: number, h: number, r: number) {
 
 /**
  * Mantém os dois recortes alinhados ao card da hero (que encolhe e depois sobe):
- * dentro do card (branco) a assinatura é azul (o azul da página); o que transborda
- * usa a cor do texto da página (text-ink) — branca sobre o fundo escuro.
+ * dentro do card (esmaecido pelo véu da cor da página) a assinatura é branca, com
+ * sombra; o que transborda usa a cor do texto da página (text-ink) — branca
+ * sobre o fundo azul.
  */
 function useCardClip(
   svgRef: RefObject<SVGSVGElement | null>,
@@ -83,7 +83,7 @@ function useCardClip(
  * máscara: a caneta (`pen`, a linha central) é desenhada dentro da <mask> com
  * stroke-dashoffset, então o pincel aparece na ordem e direção da escrita.
  *
- * Os traços são desenhados duas vezes, com as mesmas máscaras: em azul
+ * Os traços são desenhados duas vezes, com as mesmas máscaras: em branco
  * recortado ao card e em `text-ink` recortado ao resto — a assinatura pode ser
  * bem maior que o card e transbordar dele.
  */
@@ -142,13 +142,13 @@ export function Signature({
         <clipPath id={`${uid}-outside`} clipPathUnits="userSpaceOnUse">
           <path ref={outsideRef} clipRule="evenodd" />
         </clipPath>
-        {/* sombra leve na parte de dentro (sobre o personagem continua legível) */}
+        {/* sombra na parte de dentro: o branco se descola do card esmaecido */}
         <filter id={`${uid}-shadow`} x="-10%" y="-20%" width="120%" height="140%">
-          <feDropShadow dx="0" dy="3" stdDeviation="10" floodColor="#00112e" floodOpacity="0.25" />
+          <feDropShadow dx="0" dy="3" stdDeviation="10" floodColor="#00103a" floodOpacity="0.4" />
         </filter>
       </defs>
 
-      <g clipPath={`url(#${uid}-inside)`} fill={BRAND_BLUE} filter={`url(#${uid}-shadow)`}>
+      <g clipPath={`url(#${uid}-inside)`} fill="#fff" filter={`url(#${uid}-shadow)`}>
         {strokes}
       </g>
       <g clipPath={`url(#${uid}-outside)`} className="text-ink" fill="currentColor">

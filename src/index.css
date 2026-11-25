@@ -127,6 +127,11 @@ body {
 [data-gl] .hero-word {
   visibility: hidden;
 }
+/* …e o canvas já pinta o branco: sem o fundo do card, a borda arredondada não
+   ganha um fio claro sob o véu (antialias de duas camadas) */
+.hero-card[data-gl] {
+  background: transparent;
+}
 
 /* Entrada da home (quando fontes e imagem carregaram: [data-ready] no card) */
 .hero-word {

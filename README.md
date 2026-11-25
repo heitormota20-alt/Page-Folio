@@ -123,8 +123,9 @@ Recriação do design (`assets/design/Home.png` e `Home_faixa.png`, 1920 × 1080
 - **Entrada** — espera as fontes e a imagem (`data-ready` no card): o
   personagem sobe, a palavra sobe de trás da linha de base e a saudação aparece.
   Com `prefers-reduced-motion`, tudo já aparece pronto.
-- **Scroll** — `useHeroScrollScale`: o card encolhe, a tipografia some, ficam o
-  personagem e o fundo — e a assinatura é escrita por cima.
+- **Scroll** — `useHeroScrollScale`: o card encolhe, a tipografia some e a home
+  esmaece sob um véu da cor da página (até 72%, como o card acinzentado do
+  landonorris) — e a assinatura, branca, é escrita por cima com leitura.
 
 ## Assinatura — `src/components/Signature.tsx`
 
@@ -141,8 +142,8 @@ e se apaga ao rolar de volta.
   aparece na ordem e direção em que a mão escreveu.
 - A assinatura fica numa camada própria (fora do card, que tem `overflow-hidden`),
   com ~72vw (92vw no celular) — bem maior que o card pousado, transbordando como
-  na referência. Os traços são pintados duas vezes: no azul da página recortados
-  ao card (branco) e em `text-ink` recortados ao resto (o recorte acompanha o
+  na referência. Os traços são pintados duas vezes: brancos (com sombra) recortados
+  ao card esmaecido e em `text-ink` recortados ao resto (o recorte acompanha o
   card a cada quadro).
 - `useSignatureDraw.ts` — distribui o progresso pelo comprimento total das canetas
   e faz a caneta perseguir o scroll com um leve atraso (`lag`, o equivalente ao

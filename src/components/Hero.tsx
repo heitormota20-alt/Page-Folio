@@ -42,11 +42,13 @@ function useHeroReady(imgRef: RefObject<HTMLImageElement | null>) {
  * (useHeroField): curvas de nível com manchas que seguem o mouse, como no
  * landonorris.com — onde a mancha passa, a palavra fica azul e ondula.
  *
- * Ao rolar, o card encolhe, a tipografia some e a assinatura é escrita.
+ * Ao rolar, o card encolhe, a tipografia some, a home esmaece sob um véu da cor
+ * da página e a assinatura (branca) é escrita por cima.
  */
 export function Hero() {
   const cardRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
+  const overlayRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
@@ -54,7 +56,7 @@ export function Hero() {
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
   const ready = useHeroReady(imgRef)
 
-  useHeroScrollScale(cardRef, undefined, textRef)
+  useHeroScrollScale(cardRef, overlayRef, textRef)
   useScrollExit(signatureLayerRef)
   useHeroField(canvasRef, { cardRef, stageRef, ready })
 
@@ -118,6 +120,14 @@ export function Hero() {
             />
           </div>
         </section>
+
+        {/* Véu da cor da página: ao encolher, a home esmaece para a assinatura ter leitura */}
+        <div
+          ref={overlayRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-px bg-page"
+          style={{ opacity: 0 }}
+        />
       </div>
 
       {/*

@@ -3,6 +3,10 @@ import { type RefObject, useEffect } from 'react'
 const TARGET_SCALE = 0.52
 const TARGET_RADIUS = 20
 export const SCALE_END = 0.5
+/** Opacidade final do véu sobre a home (a home fica a 1 − isso). */
+const OVERLAY_MAX = 0.72
+/** Fração do encolhimento em que o véu chega ao máximo. */
+const OVERLAY_RAMP = 0.45
 
 export function useHeroScrollScale(
   ref: RefObject<HTMLDivElement | null>,
@@ -26,9 +30,12 @@ export function useHeroScrollScale(
       el.style.transform = `translate3d(0, ${-exit}px, 0) scale(${1 - t * (1 - TARGET_SCALE)})`
       el.style.borderRadius = `${t * TARGET_RADIUS}px`
 
-      // Overlay de cor — sobe até 0.55
+      // Véu da cor da página sobre a home: ela fica em baixa opacidade e a
+      // assinatura (branca) ganha leitura — como o card esmaecido do landonorris.
+      // Sobe rápido: já está quase inteiro quando a caneta começa a escrever.
       if (overlayRef?.current) {
-        overlayRef.current.style.opacity = `${t * 0.55}`
+        const v = Math.min(raw / OVERLAY_RAMP, 1)
+        overlayRef.current.style.opacity = `${OVERLAY_MAX * v * (2 - v)}`
       }
 
       // Texto: stagger de baixo para cima — cada filho some em sequência
