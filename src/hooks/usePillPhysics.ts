@@ -1,12 +1,18 @@
 import { type RefObject, useEffect } from 'react'
 
 /*
-  Física 2D das pílulas de "No que eu posso te ajudar": cada pílula é uma
-  cápsula (segmento + raio) com rotação. Quando a área entra na tela, elas caem
-  uma a uma e se empilham no chão; com o mouse dá para arrastar e arremessar
-  (no toque, um toque dá um peteleco). Impulsos sequenciais com acúmulo
-  (estável para pilhas), vários pontos de contato por par (pílulas deitadas uma
-  sobre a outra não balançam) e correção de posição. Sem bibliotecas.
+  Pílulas de "No que eu posso te ajudar".
+
+  1. Física 2D: cada pílula é uma cápsula (segmento + raio) com rotação. Quando
+     a área entra na tela, elas caem uma a uma e se empilham; com o mouse dá para
+     arrastar e arremessar (no toque, um toque dá um peteleco). Impulsos
+     sequenciais com acúmulo (estável para pilhas), vários contatos por par e
+     correção de posição. Sem bibliotecas.
+  2. Organização pela rolagem: com a cena presa na tela, a física congela e, a
+     cada trecho de rolagem, um cursor colorido entra, agarra uma pílula (as de
+     cima da pilha primeiro), leva até o seu lugar no layout final ([data-slot])
+     endireitando-a, solta e sai. Tudo é função do progresso da rolagem: rolando
+     de volta, desfaz; no começo da cena, a física volta.
 */
 
 interface Body {
@@ -231,20 +237,73 @@ function correct(contacts: Contact[]) {
   }
 }
 
-export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
+/** Trecho da cena (progresso 0–1 do palco preso) em que os cursores organizam. */
+const ORG_START = 0.1
+const ORG_END = 0.82
+/** Fração do trecho que cada pílula ocupa (as janelas se sobrepõem: vários cursores juntos). */
+const WINDOW = 0.38
+/** Texto + botão sobem por baixo do layout neste trecho do progresso da cena. */
+const REVEAL_START = 0.76
+const REVEAL_END = 0.9
+/** Dentro da janela de cada pílula: o cursor chega, carrega, solta e sai. */
+const APPROACH = 0.3
+const CARRY_END = 0.82
+
+const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2)
+const easeOut = (t: number) => 1 - (1 - t) ** 3
+const easeIn = (t: number) => t * t * t
+const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+/** Ângulo em (−π, π]. */
+const wrap = (a: number) => Math.atan2(Math.sin(a), Math.cos(a))
+
+interface Options {
+  /** palco alto da cena (o progresso vem da posição dele) */
+  sceneRef?: RefObject<HTMLElement | null>
+  /** layout final: [data-slot] na mesma ordem das pílulas */
+  layoutRef?: RefObject<HTMLElement | null>
+  /** aparece (sobe de baixo) quando a organização termina */
+  revealRef?: RefObject<HTMLElement | null>
+}
+
+interface Pose {
+  x: number
+  y: number
+  a: number
+}
+
+export function usePillPhysics(
+  containerRef: RefObject<HTMLElement | null>,
+  { sceneRef, layoutRef, revealRef }: Options = {},
+) {
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return // CSS mostra as pílulas paradas
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return // CSS mostra as pílulas organizadas
 
     const els = Array.from(container.querySelectorAll<HTMLElement>('[data-pill]'))
+    const cursors = Array.from(container.querySelectorAll<HTMLElement>('[data-cursor]'))
+    const slots = layoutRef?.current ? Array.from(layoutRef.current.querySelectorAll<HTMLElement>('[data-slot]')) : []
+    const scene = sceneRef?.current ?? null
+    const reveal = revealRef?.current ?? null
+    const canOrganize = !!scene && slots.length === els.length && cursors.length === els.length
     let W = container.clientWidth
     let H = container.clientHeight
+    let frozen = false
 
     const bodies: Body[] = els.map((el) => {
       el.style.opacity = '0'
       return { el, x: 0, y: 0, a: 0, vx: 0, vy: 0, w: 0, hw: 0, hh: 0, hl: 0, r: 0, im: 0, ii: 0, active: false }
     })
+
+    // ——— lugares no layout final (centro de cada [data-slot], em px do container) ———
+    let targets: Pose[] = []
+    const measureTargets = () => {
+      const c = container.getBoundingClientRect()
+      targets = slots.map((sl) => {
+        const r = sl.getBoundingClientRect()
+        return { x: r.left - c.left + r.width / 2, y: r.top - c.top + r.height / 2, a: 0 }
+      })
+    }
 
     const measure = () => {
       W = container.clientWidth
@@ -259,19 +318,19 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
         const m = (w * h) / 1000
         b.im = 1 / m
         b.ii = 1 / ((m * (w * w + h * h)) / 12)
-        if (b.active) {
+        if (b.active && !frozen) {
           b.x = Math.min(Math.max(b.x, b.hw), W - b.hw)
           b.y = Math.min(b.y, H - b.r)
         }
       }
+      if (canOrganize) measureTargets()
     }
-    measure()
 
+    const place = (b: Body, x: number, y: number, a: number, scale = 1) => {
+      b.el.style.transform = `translate3d(${x - b.hw}px, ${y - b.hh}px, 0) rotate(${a}rad)${scale !== 1 ? ` scale(${scale})` : ''}`
+    }
     const render = () => {
-      for (const b of bodies) {
-        if (!b.active) continue
-        b.el.style.transform = `translate3d(${b.x - b.hw}px, ${b.y - b.hh}px, 0) rotate(${b.a}rad)`
-      }
+      for (const b of bodies) if (b.active) place(b, b.x, b.y, b.a)
     }
 
     // ——— queda: uma a uma, de cima, em posições e ângulos sorteados ———
@@ -290,26 +349,144 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
       b.el.style.opacity = '1'
     }
 
-    // ——— arrastar (mouse) / peteleco (toque) ———
+    // ——— arrastar (mouse) / peteleco (toque) — só com a física ligada ———
     let grab: { b: Body; lx: number; ly: number; tx: number; ty: number; id: number } | null = null
+
+    // ——— organização pela rolagem ———
+    let from: Pose[] = []
+    let spawned: boolean[] = [] // pílulas que ainda não tinham caído: vêm de baixo da tela
+    let rank: number[] = [] // ordem de coleta (de cima da pilha para baixo)
+    // direções de entrada/saída de cada cursor (fixas por índice, espalhadas em volta)
+    const dirs = bodies.map((_, i) => {
+      const ang = i * 2.399963 + 0.6 // ângulo áureo
+      return {
+        ix: Math.cos(ang),
+        iy: Math.sin(ang) * 0.7 - 0.3,
+        ox: Math.cos(ang + 2.2),
+        oy: Math.sin(ang + 2.2) * 0.7 - 0.3,
+      }
+    })
+
+    const freeze = () => {
+      frozen = true
+      if (grab) grab.b.el.style.cursor = ''
+      grab = null
+      measureTargets()
+      spawned = bodies.map((b) => !b.active)
+      from = bodies.map((b) =>
+        b.active
+          ? { x: b.x, y: b.y, a: wrap(b.a) }
+          : { x: b.hw + Math.random() * Math.max(1, W - 2 * b.hw), y: H + 260, a: 0 },
+      )
+      for (const b of bodies) {
+        b.vx = b.vy = b.w = 0
+        b.active = true
+      }
+      rank = bodies.map((_, i) => i).sort((i, k) => from[i].y - from[k].y)
+    }
+
+    const unfreeze = () => {
+      frozen = false
+      bodies.forEach((b, i) => {
+        b.x = from[i].x
+        b.y = from[i].y
+        b.a = from[i].a
+        b.el.style.zIndex = ''
+        if (spawned[i]) {
+          // não tinha caído ainda: volta para a fila da queda
+          b.active = false
+          b.el.style.opacity = '0'
+        } else {
+          b.el.style.opacity = '1'
+        }
+      })
+      for (const c of cursors) c.style.opacity = '0'
+      render()
+    }
+
+    /** Pose de cada pílula e de cada cursor para o progresso `org` (0–1) do trecho. */
+    const organize = (org: number) => {
+      const n = bodies.length
+      const span = n > 1 ? (1 - WINDOW) / (n - 1) : 0
+      const reach = (Math.hypot(W, H) + 200) * 0.6
+      rank.forEach((i, k) => {
+        const b = bodies[i]
+        const cur = cursors[i]
+        const f = from[i]
+        const t = targets[i]
+        const local = clamp01((org - k * span) / WINDOW)
+        // ponto agarrado: no terço esquerdo da pílula
+        const lx = -b.hw + Math.min(b.hw * 0.6, 56)
+        const grabAt = (x: number, y: number, a: number) => [x + lx * Math.cos(a), y + lx * Math.sin(a)] as const
+
+        let x = f.x
+        let y = f.y
+        let a = f.a
+        let scale = 1
+        let cx: number
+        let cy: number
+        let op: number
+        if (local < APPROACH) {
+          // o cursor chega de fora da tela até a pílula
+          const u = easeInOut(local / APPROACH)
+          const [gx, gy] = grabAt(f.x, f.y, f.a)
+          cx = lerp(gx + dirs[i].ix * reach, gx, u)
+          cy = lerp(gy + dirs[i].iy * reach, gy, u) - Math.sin(u * Math.PI) * 60
+          op = local > 0 ? Math.min(1, local / (APPROACH * 0.25)) : 0
+        } else if (local < CARRY_END) {
+          // carrega: arco suave até o lugar, endireitando; levemente "levantada"
+          const v = (local - APPROACH) / (CARRY_END - APPROACH)
+          const u = easeInOut(v)
+          x = lerp(f.x, t.x, u)
+          y = lerp(f.y, t.y, u) - Math.sin(u * Math.PI) * Math.min(140, H * 0.25)
+          a = lerp(f.a, 0, easeOut(v))
+          scale = 1 + Math.sin(u * Math.PI) * 0.06
+          ;[cx, cy] = grabAt(x, y, a)
+          op = 1
+        } else {
+          // solta e sai
+          x = t.x
+          y = t.y
+          a = 0
+          const u = easeIn((local - CARRY_END) / (1 - CARRY_END))
+          const [gx, gy] = grabAt(x, y, 0)
+          cx = lerp(gx, gx + dirs[i].ox * reach, u)
+          cy = lerp(gy, gy + dirs[i].oy * reach, u)
+          op = 1 - Math.max(0, (u - 0.6) / 0.4)
+        }
+        // a que ainda não tinha caído só aparece quando o cursor a traz
+        b.el.style.opacity = spawned[i] && local < APPROACH ? '0' : '1'
+        b.x = x
+        b.y = y
+        b.a = a
+        b.el.style.zIndex = local > 0 && local < 1 ? '20' : ''
+        place(b, x, y, a, scale)
+        cur.style.opacity = local > 0 && local < 1 ? `${op}` : '0'
+        cur.style.transform = `translate3d(${cx}px, ${cy}px, 0)`
+      })
+    }
+
     const local = (e: PointerEvent) => {
       const r = container.getBoundingClientRect()
       return [e.clientX - r.left, e.clientY - r.top] as const
     }
     const onDown = (e: PointerEvent) => {
+      if (frozen) return
       const b = bodies.find((x) => x.el === e.currentTarget)
       if (!b || !b.active) return
       wake()
       const [px, py] = local(e)
       if (e.pointerType !== 'mouse') {
         // toque: um peteleco para cima (o arrastar fica para o scroll da página)
-        impulse(b, (Math.random() - 0.5) * 300 / b.im, -900 / b.im, px, py, 1)
+        impulse(b, ((Math.random() - 0.5) * 300) / b.im, -900 / b.im, px, py, 1)
         return
       }
       e.preventDefault()
       b.el.setPointerCapture(e.pointerId)
-      const dx = px - b.x, dy = py - b.y
-      const cos = Math.cos(-b.a), sin = Math.sin(-b.a)
+      const dx = px - b.x
+      const dy = py - b.y
+      const cos = Math.cos(-b.a)
+      const sin = Math.sin(-b.a)
       grab = { b, lx: dx * cos - dy * sin, ly: dx * sin + dy * cos, tx: px, ty: py, id: e.pointerId }
       b.el.style.cursor = 'grabbing'
     }
@@ -336,14 +513,19 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
     const pull = (h: number) => {
       if (!grab) return
       const { b } = grab
-      const cos = Math.cos(b.a), sin = Math.sin(b.a)
+      const cos = Math.cos(b.a)
+      const sin = Math.sin(b.a)
       const rx = grab.lx * cos - grab.ly * sin
       const ry = grab.lx * sin + grab.ly * cos
-      const gx = b.x + rx, gy = b.y + ry
-      const vgx = b.vx - b.w * ry, vgy = b.vy + b.w * rx
+      const gx = b.x + rx
+      const gy = b.y + ry
+      const vgx = b.vx - b.w * ry
+      const vgy = b.vy + b.w * rx
       const dvx = ((grab.tx - gx) / h) * 0.18 - vgx
       const dvy = ((grab.ty - gy) / h) * 0.18 - vgy
-      const k11 = b.im + b.ii * ry * ry, k12 = -b.ii * rx * ry, k22 = b.im + b.ii * rx * rx
+      const k11 = b.im + b.ii * ry * ry
+      const k12 = -b.ii * rx * ry
+      const k22 = b.im + b.ii * rx * rx
       const det = k11 * k22 - k12 * k12
       const jx = ((k22 * dvx - k12 * dvy) / det) * 0.6
       const jy = ((k11 * dvy - k12 * dvx) / det) * 0.6
@@ -351,7 +533,7 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
       b.w *= 0.96
     }
 
-    // ——— passo ———
+    // ——— passo da física ———
     const step = (dt: number) => {
       const h = dt / SUBSTEPS
       for (let s = 0; s < SUBSTEPS; s++) {
@@ -379,6 +561,27 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
       }
     }
 
+    // ——— progresso da cena (0–1 com o palco preso), suavizado ———
+    const sceneProgress = () => {
+      if (!scene) return 0
+      const r = scene.getBoundingClientRect()
+      const travel = r.height - window.innerHeight
+      return travel > 0 ? clamp01(-r.top / travel) : 0
+    }
+    let prog = sceneProgress()
+    // texto + botão: sobem de baixo no fim da organização
+    const showReveal = () => {
+      if (!reveal) return
+      const r = clamp01((prog - REVEAL_START) / (REVEAL_END - REVEAL_START))
+      const e = 1 - (1 - r) ** 3
+      reveal.style.opacity = `${e}`
+      reveal.style.transform = e < 1 ? `translate3d(0, ${(1 - e) * 48}px, 0)` : ''
+      reveal.style.pointerEvents = r > 0.5 ? '' : 'none'
+      reveal.style.visibility = r > 0 ? '' : 'hidden' // escondido: fora do Tab
+    }
+    showReveal()
+    const orgOf = (p: number) => (canOrganize ? clamp01((p - ORG_START) / (ORG_END - ORG_START)) : 0)
+
     // ——— loop: só com a área na tela e enquanto algo se mexe ———
     let frame = 0
     let last = 0
@@ -388,18 +591,34 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
       frame = 0
       const dt = Math.min((now - last) / 1000, 1 / 30)
       last = now
-      if (started) {
-        const t = (now - startAt) / 1000
-        order.forEach((i, k) => {
-          if (!bodies[i].active && t >= k * DROP_GAP) drop(bodies[i])
-        })
+
+      const target = sceneProgress()
+      prog += (target - prog) * (1 - Math.exp(-dt / 0.1))
+      if (Math.abs(target - prog) < 1e-4) prog = target
+      const org = orgOf(prog)
+      showReveal()
+
+      let busy: boolean
+      if (org > 0) {
+        if (!frozen) freeze()
+        organize(org)
+        busy = prog !== target
+      } else {
+        if (frozen) unfreeze()
+        if (started) {
+          const t = (now - startAt) / 1000
+          order.forEach((i, k) => {
+            if (!bodies[i].active && t >= k * DROP_GAP) drop(bodies[i])
+          })
+        }
+        step(dt)
+        render()
+        const allIn = bodies.every((b) => b.active)
+        const moving = bodies.some((b) => b.active && (Math.hypot(b.vx, b.vy) > 6 || Math.abs(b.w) > 0.06))
+        busy = moving || !!grab || !allIn || prog !== target
       }
-      step(dt)
-      render()
       // dorme quando tudo assentou (sem gastar CPU parado)
-      const allIn = bodies.every((b) => b.active)
-      const moving = bodies.some((b) => b.active && (Math.hypot(b.vx, b.vy) > 6 || Math.abs(b.w) > 0.06))
-      calm = moving || grab || !allIn ? 0 : calm + 1
+      calm = busy ? 0 : calm + 1
       if (visible && calm < 45) frame = requestAnimationFrame(loop)
     }
     const wake = () => {
@@ -422,10 +641,12 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
       { threshold: [0, 0.3] },
     )
     io.observe(container)
+    window.addEventListener('scroll', wake, { passive: true })
 
     const ro = new ResizeObserver(() => {
       measure()
-      render()
+      if (frozen) organize(orgOf(prog))
+      else render()
       wake()
     })
     ro.observe(container)
@@ -438,6 +659,7 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
       cancelAnimationFrame(frame)
       io.disconnect()
       ro.disconnect()
+      window.removeEventListener('scroll', wake)
       for (const b of bodies) {
         b.el.removeEventListener('pointerdown', onDown)
         b.el.removeEventListener('pointermove', onMove)
@@ -445,7 +667,18 @@ export function usePillPhysics(containerRef: RefObject<HTMLElement | null>) {
         b.el.removeEventListener('pointercancel', onUp)
         b.el.style.opacity = ''
         b.el.style.transform = ''
+        b.el.style.zIndex = ''
+      }
+      for (const c of cursors) {
+        c.style.opacity = ''
+        c.style.transform = ''
+      }
+      if (reveal) {
+        reveal.style.opacity = ''
+        reveal.style.transform = ''
+        reveal.style.pointerEvents = ''
+        reveal.style.visibility = ''
       }
     }
-  }, [containerRef])
+  }, [containerRef, sceneRef, layoutRef, revealRef])
 }

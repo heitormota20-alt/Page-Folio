@@ -195,14 +195,25 @@ inércia, e `riseLines` para a subida das linhas dos títulos.
 
 **"No que eu posso te ajudar"** (referência: "ALL YOUR design needs"): no azul da
 segunda dobra, título em duas vozes — "NO QUE EU POSSO" em Anton (a mesma do
-"PORTFÓLIO") e "te ajudar" em Instrument Serif itálico —, texto curto + botão
-"Agende uma conversa" à direita e, embaixo, os serviços em **pílulas que caem e se
-empilham com física** (`usePillPhysics.ts`, sem biblioteca): cada pílula é uma
-cápsula com rotação, contatos com atrito e quique, e a pilha dorme quando assenta.
-Caem uma a uma quando a área entra na tela; com o mouse dá para arrastar e
-arremessar (no toque, um toque dá um peteleco — arrastar fica para o scroll). Com
-movimento reduzido, as pílulas ficam paradas lado a lado. A lista está em
-`SERVICES` (provisória); leitores de tela recebem uma lista comum.
+"PORTFÓLIO") e "te ajudar" em Instrument Serif itálico — e, embaixo, os serviços em
+pílulas (`usePillPhysics.ts`, sem biblioteca). É uma **cena presa na tela** (palco de
+320vh):
+
+1. as pílulas caem uma a uma e se empilham com física — cápsulas com rotação,
+   atrito e quique; com o mouse dá para arrastar e arremessar (no toque, um
+   toque dá um peteleco — arrastar fica para o scroll);
+2. conforme a rolagem avança (`ORG_START`–`ORG_END`), a física congela e
+   **cursores coloridos** (estilo multiplayer do Figma, etiquetas em `CURSORS`)
+   entram, agarram cada pílula — as de cima da pilha primeiro —, levam até o seu
+   lugar no layout final endireitando-a, soltam e saem; vários ao mesmo tempo;
+3. termina com as 6 pílulas organizadas, 3 em cima e 3 embaixo (`ROWS`),
+   alinhadas ao título — o layout é feito de `[data-slot]` invisíveis, então se
+   ajusta à tela (no celular as fileiras quebram) —, e, com um respiro, o texto e
+   o botão "Agende uma conversa" sobem por baixo delas (`REVEAL_*`).
+
+Tudo é função da rolagem: rolando de volta, os cursores desfazem e a pilha volta
+à física. Com movimento reduzido, as pílulas já aparecem organizadas. A lista
+está em `SERVICES` (provisória); leitores de tela recebem uma lista comum.
 
 ## Arquivos Visuais — `src/components/Archive.tsx`
 
