@@ -182,8 +182,8 @@ azul da palavra "PORTFÓLIO" `#0036b2` + branco (tema padrão). Claro
 (`html.theme-dark`): azul-marinho `#081722` + branco. O tema é **por seção**
 (`usePageThemes`, no `App`): seções marcadas com `data-theme="light|dark"` e
 `data-theme-at` (fração da tela) — vale a última cujo topo já passou desse ponto;
-antes de todas, o azul. Hoje: Serviços → claro (5%), Ferramentas → escuro (60%),
-Sobre mim → claro (60%). As variáveis são registradas com `@property`, então
+antes de todas, o azul. Hoje: Serviços → azul (padrão), Arquivos → claro (50%),
+Ferramentas → escuro (60%), Sobre mim → claro (60%). As variáveis são registradas com `@property`, então
 a troca é uma transição de 0,8s de tudo que usa `bg-page` / `text-ink` (o canvas lê
 a cor a cada quadro). Volta ao azul ao rolar para cima. Títulos de seção usam
 `text-title` (`--color-title`): branco no azul, cinza quente `#84817b` no branco.
@@ -192,16 +192,16 @@ As seções em cena fixa usam a base `useScrollScene`: palco alto + painel `stic
 de 100svh, progresso de entrada e de cena (0–1 com o painel parado), ambos com
 inércia, e `riseLines` para a subida das linhas dos títulos.
 
-A seção é uma **cena fixa na tela** (`useServicesScene`): um palco de 260vh com um
-painel `sticky` de 100svh. Enquanto o painel sobe até parar, as linhas do título
-sobem por trás das suas janelas (`overflow-hidden`). Com ele parado (160vh de
-rolagem): o título fica sozinho no centro; os 4 cards voam de baixo em arco
-(x e y com curvas diferentes), girando de 4× até a inclinação final (`data-rot`),
-passam um pouco do ponto (ease-out-back) e assentam desencontrados (`data-y`,
-`data-delay`), cobrindo o título, que sobe de leve e se apaga; por fim, a
-composição fica parada antes de a cena seguir. Todo o movimento tem inércia
-(`LAG`). `-mt-[40vh]` faz o título entrar logo depois do card da hero. Os
-serviços dos cards são provisórios.
+**"No que eu posso te ajudar"** (referência: "ALL YOUR design needs"): no azul da
+segunda dobra, título em duas vozes — "NO QUE EU POSSO" em Anton (a mesma do
+"PORTFÓLIO") e "te ajudar" em Instrument Serif itálico —, texto curto + botão
+"Agende uma conversa" à direita e, embaixo, os serviços em **pílulas que caem e se
+empilham com física** (`usePillPhysics.ts`, sem biblioteca): cada pílula é uma
+cápsula com rotação, contatos com atrito e quique, e a pilha dorme quando assenta.
+Caem uma a uma quando a área entra na tela; com o mouse dá para arrastar e
+arremessar (no toque, um toque dá um peteleco — arrastar fica para o scroll). Com
+movimento reduzido, as pílulas ficam paradas lado a lado. A lista está em
+`SERVICES` (provisória); leitores de tela recebem uma lista comum.
 
 ## Arquivos Visuais — `src/components/Archive.tsx`
 
@@ -209,8 +209,8 @@ Cena fixa (`useArchiveScene`, palco de 320vh): o título grande e apagado
 (`text-title/45`) sobe e para no centro; com o painel parado, peças e pastas azuis
 sobem flutuando por toda a tela, cada uma no seu tempo (`delay`) e profundidade
 (`depth`: perto = maior, mais rápida, na frente do título; longe = menor, mais
-lenta, desfocada, atrás dele), com leve balanço. `-mt-[45vh]` faz o título entrar
-enquanto os cards dos serviços saem. **As peças são provisórias** (pôsteres
+lenta, desfocada, atrás dele), com leve balanço. A página passa do azul ao branco
+quando a seção chega à metade da tela. **As peças são provisórias** (pôsteres
 abstratos): para usar as artes reais, coloque os arquivos em `public/arquivos/` e
 passe `src` em cada item de `PIECES`.
 

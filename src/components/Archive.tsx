@@ -96,9 +96,9 @@ export function Archive() {
   useArchiveScene(sceneRef)
 
   return (
-    // -mt-[45vh]: começa por baixo do fim da cena anterior — o título entra
-    // enquanto os cards dos serviços saem, sem vão vazio entre as duas cenas
-    <section id="arquivos" className="-mt-[45vh] motion-reduce:mt-0">
+    // data-theme: a página passa do azul (serviços) ao branco quando esta seção
+    // chega à metade da tela
+    <section id="arquivos" data-theme="light" data-theme-at="0.5">
       {/* Palco alto: 100vh de entrada + 220vh com o painel parado na tela */}
       <div ref={sceneRef} className="relative h-[320vh] motion-reduce:h-auto">
         <div className="pointer-events-none sticky top-0 grid h-[100svh] place-items-center overflow-hidden px-6 sm:px-10 motion-reduce:static motion-reduce:h-auto motion-reduce:gap-12 motion-reduce:overflow-visible motion-reduce:py-24">

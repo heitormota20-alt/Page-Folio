@@ -1,128 +1,87 @@
-import { useId, useRef } from 'react'
-import { useServicesScene } from '../hooks/useServicesScene'
+import { useRef } from 'react'
+import { usePillPhysics } from '../hooks/usePillPhysics'
 
-// Uma linha por item — quebra fixa: "No que eu posso" / "te ajudar"
-const TITLE_LINES = ['No que eu posso', 'te ajudar']
-
-type Shape = 'circle' | 'square' | 'triangle' | 'diamond'
-
-// Conteúdo provisório — trocar pelos serviços reais.
-// rot: inclinação final (graus) · y: desnível final (px) · delay: atraso no voo
-// (fração da cena; 0 = chega primeiro) — cartas desencontradas, como na referência.
-const SERVICES: {
-  title: string
-  from: string
-  to: string
-  shape: Shape
-  rot: number
-  y: number
-  delay: number
-}[] = [
-  { title: 'Experimentação e testes A/B', from: '#2563eb', to: '#22d3ee', shape: 'circle', rot: -6, y: 18, delay: 0.1 },
-  { title: 'Otimização de conversão', from: '#059669', to: '#34d399', shape: 'square', rot: 4, y: 36, delay: 0 },
-  { title: 'Design de produto', from: '#db2777', to: '#fb7185', shape: 'triangle', rot: -3, y: 4, delay: 0.17 },
-  { title: 'Growth e ativação', from: '#ea580c', to: '#facc15', shape: 'diamond', rot: 5, y: 22, delay: 0.06 },
+// Conteúdo provisório — trocar pelos serviços reais (uma pílula por item).
+const SERVICES = [
+  'Testes A/B',
+  'Otimização de conversão',
+  'Design de produto',
+  'Growth',
+  'Landing pages',
+  'UX/UI design',
+  'Pesquisa com usuários',
+  'Prototipação',
+  'Onboarding',
+  'Análise de dados',
+  'Sites',
+  'Apps',
 ]
 
-const CARD_BG = '#0c0f13'
-
-/** Círculo em gradiente com anéis concêntricos e uma forma preta no centro. */
-function ServiceIcon({ from, to, shape }: { from: string; to: string; shape: Shape }) {
-  const id = `g${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
-  return (
-    <svg viewBox="0 0 100 100" aria-hidden="true" className="w-[76%]">
-      <defs>
-        <linearGradient id={id} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor={from} />
-          <stop offset="1" stopColor={to} />
-        </linearGradient>
-      </defs>
-      <circle cx="50" cy="50" r="48" fill={`url(#${id})`} />
-      {[42, 36, 30, 24].map((r) => (
-        <circle key={r} cx="50" cy="50" r={r} fill="none" stroke="#fff" strokeOpacity="0.28" strokeWidth="1.2" />
-      ))}
-      <g fill={CARD_BG}>
-        {shape === 'circle' && <circle cx="50" cy="50" r="10" />}
-        {shape === 'square' && <rect x="40.5" y="40.5" width="19" height="19" rx="2" />}
-        {shape === 'triangle' && <path d="M50 38.5 62 60H38Z" />}
-        {shape === 'diamond' && <path d="M50 37.5 62.5 50 50 62.5 37.5 50Z" />}
-      </g>
-    </svg>
-  )
-}
-
 /**
- * Terceira seção — uma cena fixa na tela (ver useServicesScene): o título sobe e
- * para no centro; os cards voam de baixo em arco, girando, cobrem o título e
- * assentam; a composição fica parada um trecho antes de a cena seguir.
+ * Terceira seção, no estilo da referência ("ALL YOUR design needs"): no azul da
+ * segunda dobra, título em duas vozes — Anton (a mesma do "PORTFÓLIO") e um
+ * itálico serifado —, texto curto + botão à direita e, embaixo, os serviços em
+ * pílulas que caem e se empilham com física (usePillPhysics; dá para arrastar).
  *
- * -mt-[40vh]: a seção começa por baixo do espaçador do App, para o título entrar
- * logo depois do card da hero (sem vão vazio entre os dois).
+ * As cores vêm do tema da página (text-ink / bg-ink / text-page): quando a
+ * página vira branca na seção seguinte, o texto escurece junto.
  */
 export function Services() {
-  const sceneRef = useRef<HTMLDivElement>(null)
-  useServicesScene(sceneRef)
+  const pileRef = useRef<HTMLDivElement>(null)
+  usePillPhysics(pileRef)
 
   return (
-    // data-theme: tema claro quando a cena para na tela (o card da hero já saiu)
-    <section id="ajuda" data-theme="light" data-theme-at="0.05" className="-mt-[40vh] motion-reduce:mt-0">
-      {/* Palco alto: 100vh de entrada + 160vh com o painel parado na tela */}
-      <div ref={sceneRef} className="relative h-[260vh] motion-reduce:h-auto">
-        <div className="sticky top-0 grid h-[100svh] place-items-center overflow-hidden px-6 sm:px-10 motion-reduce:static motion-reduce:h-auto motion-reduce:gap-12 motion-reduce:overflow-visible motion-reduce:py-24">
-          {/*
-            Mesma tipografia do "PAGE FÓLIO" (Zen Dots, caixa alta), um pouco menor.
-            min(): em telas estreitas, encolhe até "NO QUE EU POSSO" caber numa linha
-            (a linha mede ≈ 12,6× o tamanho da fonte). flow-root: as margens
-            negativas das janelas não vazam do h2.
-          */}
-          <h2
-            data-title=""
-            className="font-heading flow-root text-center text-[length:min(clamp(1.75rem,5.5vw,5rem),calc((100vw_-_5rem)/13))] leading-[1.06] tracking-[-0.01em] text-title uppercase [grid-area:1/1] motion-reduce:[grid-area:auto]"
-          >
-            {TITLE_LINES.map((line) => (
-              // Janela da linha (overflow-hidden): o texto sobe de baixo para cima
-              // por trás dela. py/-my dão folga p/ a perna do Q.
-              <span key={line} className="-my-[0.14em] block overflow-hidden py-[0.14em] whitespace-nowrap">
-                <span data-line="" className="block will-change-transform">
-                  {line}
-                </span>
-              </span>
-            ))}
+    <section id="ajuda" className="relative overflow-x-clip">
+      <div className="flex min-h-[100svh] flex-col px-6 pt-[16vh] sm:px-10 lg:px-16">
+        <header className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
+          <h2 className="text-ink">
+            <span className="block font-['Anton',sans-serif] text-[length:clamp(3rem,8.6vw,9.5rem)] leading-[0.95] tracking-[-0.005em] uppercase">
+              No que eu posso
+            </span>
+            <span className="-mt-[0.04em] block font-['Instrument_Serif',serif] text-[length:clamp(3.4rem,9.6vw,10.5rem)] leading-[0.9] italic">
+              te ajudar
+            </span>
           </h2>
 
-          {/* Cards — na mesma célula do grid que o título, por cima dele (z-10) */}
-          <ul
-            data-cards=""
-            className="relative z-10 grid w-full max-w-5xl grid-cols-2 gap-3 [grid-area:1/1] sm:gap-4 lg:grid-cols-4 motion-reduce:[grid-area:auto]"
-          >
-            {SERVICES.map((s) => (
-              <li
-                key={s.title}
-                data-card=""
-                data-rot={s.rot}
-                data-y={s.y}
-                data-delay={s.delay}
-                className="will-change-transform motion-reduce:rotate-0"
-              >
-                <div
-                  className="relative aspect-[0.78] overflow-hidden rounded-[18px] shadow-[0_28px_50px_-14px_rgba(11,26,36,0.5)] ring-1 ring-white/5 transition-transform duration-300 ease-out hover:-translate-y-2 sm:rounded-[22px]"
-                  style={{ background: CARD_BG }}
-                >
-                  <div className="absolute inset-x-0 top-0 bottom-[24%] grid place-items-center pt-[6%]">
-                    <ServiceIcon from={s.from} to={s.to} shape={s.shape} />
-                  </div>
-                  <div
-                    className="absolute inset-x-0 bottom-0 grid h-[24%] place-items-center px-3 text-center"
-                    style={{ background: `linear-gradient(90deg, ${s.from}, ${s.to})` }}
-                  >
-                    <h3 className="text-[12px] leading-tight font-semibold text-white sm:text-[15px]">
-                      {s.title}
-                    </h3>
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <div className="max-w-[19rem] lg:pt-[1.2vw]">
+            <p className="text-[13px] leading-relaxed text-ink/80 sm:text-sm">
+              Design e experimentação em um só lugar — do primeiro teste ao produto validado, com
+              decisões guiadas por dados.
+            </p>
+            <a
+              href="#contatos"
+              className="mt-5 inline-flex rounded-full bg-ink px-6 py-3 text-[11px] font-semibold tracking-[0.14em] text-page uppercase transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+            >
+              Agende uma conversa
+            </a>
+          </div>
+        </header>
+
+        {/* Para leitores de tela: a lista de serviços (as pílulas são só visuais) */}
+        <ul className="sr-only">
+          {SERVICES.map((s) => (
+            <li key={s}>{s}</li>
+          ))}
+        </ul>
+
+        {/*
+          Área da física: as pílulas caem de cima e se empilham no fundo da seção.
+          Com movimento reduzido, ficam paradas lado a lado (motion-reduce:*).
+        */}
+        <div
+          ref={pileRef}
+          aria-hidden="true"
+          className="relative mt-auto h-[46svh] min-h-[300px] w-full motion-reduce:flex motion-reduce:h-auto motion-reduce:min-h-0 motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-3 motion-reduce:py-16"
+        >
+          {SERVICES.map((s) => (
+            <span
+              key={s}
+              data-pill=""
+              className="absolute top-0 left-0 cursor-grab touch-pan-y rounded-full border-[1.5px] border-[#0b1a24] bg-white px-[1.2em] py-[0.4em] font-['Instrument_Serif',serif] text-[length:clamp(1.15rem,2.4vw,2.6rem)] leading-none whitespace-nowrap text-[#0b1a24] shadow-[0_10px_24px_-12px_rgba(0,10,40,0.55)] select-none will-change-transform motion-reduce:static"
+            >
+              {s}
+            </span>
+          ))}
         </div>
       </div>
     </section>

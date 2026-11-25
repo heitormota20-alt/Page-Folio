@@ -1,10 +1,7 @@
 import { type RefObject, useEffect } from 'react'
 
 export const clamp01 = (v: number) => Math.min(Math.max(v, 0), 1)
-export const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
-export const easeInOutSine = (t: number) => -(Math.cos(Math.PI * t) - 1) / 2
-/** Passa um pouco do ponto e volta. */
-export const easeOutBack = (t: number, s = 1.25) => 1 + (s + 1) * (t - 1) ** 3 + s * (t - 1) ** 2
+const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
 
 /** Inércia: tempo (s) que o movimento leva para alcançar a rolagem. */
 const LAG = 0.14
