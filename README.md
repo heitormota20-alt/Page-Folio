@@ -79,6 +79,23 @@ npm run dev
 
 Carregadas via Google Fonts no `index.html`. `body` usa `var(--font-body)`.
 
+## Assinatura — `src/components/Signature.tsx`
+
+Referência: o efeito `signature_scroll` de landonorris.com (lá é um Rive; aqui é
+SVG puro). A assinatura é escrita pelo scroll enquanto o card da hero encolhe —
+de `0.12 × vh` até `SCALE_END` (o pouso do card, mesmo ponto da trava de scroll) —
+e se apaga ao rolar de volta.
+
+- `signature-paths.ts` — a assinatura "Heitor M" vetorizada da imagem de
+  referência, dividida em 8 traços na ordem da escrita. Cada traço tem o
+  contorno do pincel (`shape`) e a linha central da caneta (`pen`).
+- `Signature.tsx` — cada `shape` fica dentro de uma `<mask>` cuja caneta é
+  desenhada com `stroke-dashoffset`: o pincel (com a espessura variável original)
+  aparece na ordem e direção em que a mão escreveu.
+- `useSignatureDraw.ts` — distribui o progresso pelo comprimento total das canetas
+  e faz a caneta perseguir o scroll com um leve atraso (`lag`, o equivalente ao
+  `scrub` do GSAP). Com `prefers-reduced-motion`, sem atraso.
+
 ## O núcleo — `src/hooks/useVideoScrub.ts`
 
 `useVideoScrub(videoRef, { mapping = 'absolute', sensitivity = 0.8, restAt = 'center' })`.

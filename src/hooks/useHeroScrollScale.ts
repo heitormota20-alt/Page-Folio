@@ -1,8 +1,8 @@
-import { RefObject, useEffect } from 'react'
+import { type RefObject, useEffect } from 'react'
 
 const TARGET_SCALE = 0.52
 const TARGET_RADIUS = 20
-const SCALE_END = 0.5
+export const SCALE_END = 0.5
 
 export function useHeroScrollScale(
   ref: RefObject<HTMLDivElement | null>,

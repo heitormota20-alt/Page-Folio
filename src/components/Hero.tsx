@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import { ScrubVideo } from './ScrubVideo'
+import { Signature } from './Signature'
 import { useHeroScrollScale } from '../hooks/useHeroScrollScale'
 
 export function Hero() {
@@ -50,6 +51,9 @@ export function Hero() {
           </p>
         </div>
       </section>
+
+      {/* Assinatura escrita pelo scroll enquanto o card encolhe — acima do overlay */}
+      <Signature className="pointer-events-none absolute bottom-[10%] left-1/2 z-[4] w-[92%] -translate-x-1/2 text-white [filter:drop-shadow(0_2px_18px_rgba(4,16,24,0.55))] sm:w-[64%]" />
     </div>
   )
 }
