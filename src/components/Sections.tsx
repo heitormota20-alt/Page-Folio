@@ -1,3 +1,5 @@
+import { Services } from './Services'
+
 const PROJECTS = [
   {
     year: '2026',
@@ -33,9 +35,10 @@ const ABOUT = [
 
 export function Sections() {
   return (
-    <div className="relative z-[2] bg-[#081722] text-white">
-      {/* Gap entre a hero e o início do conteúdo — mesmo espaço da referência */}
-      <div className="h-[60vh]" aria-hidden="true" />
+    // Sem fundo próprio: o conteúdo corre sobre o fundo fixo (curvas de nível),
+    // então não há bloco opaco subindo nem corte entre a segunda dobra e as seções.
+    <div className="relative z-[2] text-white">
+      <Services />
       <section id="sobre" className="border-t border-white/10 px-6 py-24 sm:px-10 sm:py-32">
         <div className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-[1fr_1.4fr] sm:gap-16">
           <h2 className="text-[12px] font-medium tracking-[0.22em] text-white/50 uppercase">

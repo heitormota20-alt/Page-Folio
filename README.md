@@ -96,6 +96,38 @@ e se apaga ao rolar de volta.
   e faz a caneta perseguir o scroll com um leve atraso (`lag`, o equivalente ao
   `scrub` do GSAP). Com `prefers-reduced-motion`, sem atraso.
 
+## Curvas de nível no fundo — `src/components/TopoLines.tsx`
+
+Line art topográfico atrás do letreiro (referência: landonorris.com), desenhado
+ao vivo num `<canvas>` por `src/hooks/useTopoLines.ts`:
+
+- o relevo é uma soma de ondas (cossenos em direções aleatórias, seed fixa);
+  cada onda anda numa velocidade própria → as curvas se transformam devagar, e
+  o conjunto desliza na diagonal (`DRIFT_X/Y`);
+- curvas de nível por marching squares; `LEVELS` / `LEVEL_GAP` controlam o
+  espaçamento, `SCALE` o tamanho das formas;
+- 24 fps e só enquanto o fundo aparece (entre a hero encolher e as seções
+  cobrirem a tela). Com `prefers-reduced-motion`, um quadro parado.
+
+## Fluxo contínuo e terceira seção — `src/components/Services.tsx`
+
+Não há bloco opaco subindo sobre a segunda dobra: o fundo (cor + curvas de nível)
+é um só, fixo, para a página inteira, e as seções não têm fundo próprio. Depois do
+pouso do card (`SCALE_END`), o card (`useHeroScrollScale`) e o letreiro
+(`useScrollExit`) sobem junto com a página, e "No que eu posso te ajudar" entra
+logo abaixo.
+
+`useScrollReveal` amarra a revelação à rolagem (avança e volta): as palavras de
+`[data-reveal-words]` acendem em sequência e cada `[data-reveal]` sobe e aparece
+ao entrar na tela. A lista de serviços em `Services.tsx` é provisória.
+
+## Menu — `src/components/Navbar.tsx`
+
+No topo, três botões. Passando de 25% do viewport de scroll (segunda dobra), eles
+deslizam até o canto e se recolhem num botão hambúrguer; ao voltar acima de 18%,
+abrem de novo. Clicar no hambúrguer faz os botões saírem (o ícone vira X); clicar
+num link, no X ou apertar Esc recolhe. Só CSS transitions (transform/opacity).
+
 ## O núcleo — `src/hooks/useVideoScrub.ts`
 
 `useVideoScrub(videoRef, { mapping = 'absolute', sensitivity = 0.8, restAt = 'center' })`.

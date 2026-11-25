@@ -1,18 +1,32 @@
+import { useRef } from 'react'
 import { Navbar } from './components/Navbar'
 import { Hero } from './components/Hero'
 import { Sections } from './components/Sections'
 import { Marquee } from './components/Marquee'
+import { TopoLines } from './components/TopoLines'
 import { useLenis } from './hooks/useLenis'
 import { useScrollLock } from './hooks/useScrollLock'
+import { useScrollExit } from './hooks/useHeroScrollScale'
 
 export default function App() {
   useLenis()
   useScrollLock()
 
+  const marqueeRef = useRef<HTMLDivElement>(null)
+  useScrollExit(marqueeRef)
+
   return (
     <>
-      {/* Fundo fixo da segunda dobra — visível enquanto o hero encolhe */}
-      <div className="fixed inset-0 z-0 flex flex-col justify-center gap-8 overflow-hidden bg-[#081722]">
+      {/* Fundo contínuo da página inteira: cor + curvas de nível */}
+      <div className="fixed inset-0 z-0 overflow-hidden bg-[#081722]">
+        <TopoLines />
+      </div>
+
+      {/* Letreiro da segunda dobra — depois do pouso, sobe junto com o card */}
+      <div
+        ref={marqueeRef}
+        className="pointer-events-none fixed inset-0 z-0 flex flex-col justify-center gap-8 overflow-hidden"
+      >
         <Marquee text="LOREM IPSUM" direction="left" speed={24} />
         <Marquee text="LOREM IPSUM" direction="right" speed={18} />
       </div>
@@ -21,8 +35,9 @@ export default function App() {
       <Navbar />
 
       {/*
-        Spacer = SCALE_END(50vh) + 100vh = 150vh
-        Seções só entram no viewport após o hero terminar de encolher
+        Spacer = SCALE_END(50vh) + 100vh = 150vh.
+        No pouso do card (scroll = 50vh) as seções estão na borda de baixo da
+        tela; dali em diante card, letreiro e seções sobem juntos — sem corte.
       */}
       <div className="h-[150vh]" aria-hidden="true" />
       <Sections />

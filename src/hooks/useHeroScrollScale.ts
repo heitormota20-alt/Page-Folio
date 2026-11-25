@@ -20,8 +20,10 @@ export function useHeroScrollScale(
       const raw = Math.min(Math.max(window.scrollY / scaleRange, 0), 1)
       const t = raw * (2 - raw) // ease-out quad
 
-      // Card: escala + border-radius
-      el.style.transform = `scale(${1 - t * (1 - TARGET_SCALE)})`
+      // Card: escala + border-radius. Depois do pouso, sobe junto com a página
+      // (como conteúdo normal) — a seção seguinte vem logo abaixo, sem corte.
+      const exit = Math.max(0, window.scrollY - scaleRange)
+      el.style.transform = `translate3d(0, ${-exit}px, 0) scale(${1 - t * (1 - TARGET_SCALE)})`
       el.style.borderRadius = `${t * TARGET_RADIUS}px`
 
       // Overlay de cor — sobe até 0.55
@@ -56,4 +58,22 @@ export function useHeroScrollScale(
     onScroll()
     return () => window.removeEventListener('scroll', onScroll)
   }, [ref, overlayRef, textRef])
+}
+
+/**
+ * Para camadas fixas da segunda dobra (o letreiro): depois do pouso do card
+ * (SCALE_END), sobem junto com a página, no mesmo ritmo do card.
+ */
+export function useScrollExit(ref: RefObject<HTMLElement | null>) {
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const onScroll = () => {
+      const exit = Math.max(0, window.scrollY - window.innerHeight * SCALE_END)
+      el.style.transform = exit ? `translate3d(0, ${-exit}px, 0)` : ''
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [ref])
 }
