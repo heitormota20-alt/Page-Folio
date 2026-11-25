@@ -4,9 +4,9 @@ import { useEffect } from 'react'
  * Tema da página por seção. Cada seção que muda o tema leva
  *   data-theme="light" | "dark"   e   data-theme-at="0.6"
  * (fração da altura da tela). Vale o tema da ÚLTIMA seção marcada cujo topo já
- * subiu acima de `data-theme-at`; antes de todas, o escuro (hero e segunda dobra).
- * Claro = html.theme-light (ver index.css); a troca é a transição das variáveis
- * --color-page / --color-ink / --color-title.
+ * subiu acima de `data-theme-at`; antes de todas, o padrão — o azul da segunda
+ * dobra. Claro = html.theme-light, escuro = html.theme-dark (ver index.css); a
+ * troca é a transição das variáveis --color-page / --color-ink / --color-title.
  */
 export function usePageThemes() {
   useEffect(() => {
@@ -16,12 +16,13 @@ export function usePageThemes() {
     const update = () => {
       frame = 0
       const vh = window.innerHeight || 1
-      let theme = 'dark'
+      let theme = 'blue'
       for (const el of document.querySelectorAll<HTMLElement>('[data-theme]')) {
         const at = Number(el.dataset.themeAt ?? 0.5)
         if (el.getBoundingClientRect().top < vh * at) theme = el.dataset.theme ?? theme
       }
       root.classList.toggle('theme-light', theme === 'light')
+      root.classList.toggle('theme-dark', theme === 'dark')
     }
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update)
@@ -34,7 +35,7 @@ export function usePageThemes() {
       window.removeEventListener('scroll', schedule)
       window.removeEventListener('resize', schedule)
       cancelAnimationFrame(frame)
-      root.classList.remove('theme-light')
+      root.classList.remove('theme-light', 'theme-dark')
     }
   }, [])
 }

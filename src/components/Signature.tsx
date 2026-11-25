@@ -2,7 +2,7 @@ import { type RefObject, useEffect, useId, useRef } from 'react'
 import { SIGNATURE } from './signature-paths'
 import { useSignatureDraw } from '../hooks/useSignatureDraw'
 import { SCALE_END } from '../hooks/useHeroScrollScale'
-import { BAND_BLUE } from './hero-layout'
+import { BRAND_BLUE } from './hero-layout'
 
 /** Começa a escrever logo que o card começa a encolher… */
 const DRAW_START = 0.12
@@ -24,7 +24,7 @@ function roundedRect(x: number, y: number, w: number, h: number, r: number) {
 
 /**
  * Mantém os dois recortes alinhados ao card da hero (que encolhe e depois sobe):
- * dentro do card (branco) a assinatura é azul, o azul da faixa; o que transborda
+ * dentro do card (branco) a assinatura é azul (o azul da página); o que transborda
  * usa a cor do texto da página (text-ink) — branca sobre o fundo escuro.
  */
 function useCardClip(
@@ -148,7 +148,7 @@ export function Signature({
         </filter>
       </defs>
 
-      <g clipPath={`url(#${uid}-inside)`} fill={BAND_BLUE} filter={`url(#${uid}-shadow)`}>
+      <g clipPath={`url(#${uid}-inside)`} fill={BRAND_BLUE} filter={`url(#${uid}-shadow)`}>
         {strokes}
       </g>
       <g clipPath={`url(#${uid}-outside)`} className="text-ink" fill="currentColor">

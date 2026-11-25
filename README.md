@@ -1,8 +1,9 @@
 # Page Fólio
 
 Portfólio de Heitor Mota. A home é o design feito no Photoshop (`assets/design/`)
-recriado em código: "PORTFÓLIO" em Anton atrás, a faixa azul se desenhando em volta
-do personagem e o avatar na frente. Ao rolar, o card encolhe e a assinatura é escrita.
+recriado em código: "PORTFÓLIO" em Anton atrás do avatar, sobre um fundo de curvas
+de nível cujo rastro do mouse pinta a palavra de azul. Ao rolar, o card encolhe e
+a assinatura é escrita.
 
 > A home anterior (vídeo do personagem virando a cabeça com o mouse —
 > `ScrubVideo.tsx` + `useVideoScrub.ts`, seções "O núcleo" e "Passo 0" abaixo)
@@ -32,8 +33,8 @@ Page-Folio/
 │   └── personagem.mp4            # vídeo all-intra (home antiga, sem uso)
 ├── scripts/prepare-video.mjs     # gera public/personagem.mp4
 ├── src/
-│   ├── components/               # Hero, HeroBand, Signature, Navbar, seções…
-│   ├── hooks/                    # useHeroScrollScale, useBandDraw, useLenis…
+│   ├── components/               # Hero, Signature, Navbar, seções…
+│   ├── hooks/                    # useHeroScrollScale, useHeroField, useLenis…
 │   ├── App.tsx · main.tsx · index.css
 └── index.html · vite.config.ts · tsconfig*.json
 ```
@@ -97,24 +98,33 @@ Recriação do design (`assets/design/Home.png` e `Home_faixa.png`, 1920 × 1080
 - **"PORTFÓLIO"** — texto de verdade em Anton (SVG `<text>`, tamanho e espaçamento
   medidos no PNG), `#222`. **"SEJA BEM VINDO AO MEU"** — Inter Light. Há um `h1`
   só para leitores de tela.
-- **Personagem** — `public/home/personagem.webp`, do recorte
-  `assets/design/personagem-recortado.png` (posição em `hero-layout.ts`).
-- **Faixa azul** — `HeroBand.tsx`, inteira em código: cada laço é **um `path`
-  com espessura** (`stroke-width` ≈ 186, cor `BAND_BLUE` em `hero-layout.ts`).
-  As linhas centrais (`hero-band-paths.ts`) foram medidas no recorte
-  `assets/design/Laços-Azuis-em-Camadas.png` — onde a faixa aparece, seguem o
-  meio dela; atrás do personagem, sob o outro laço e fora do quadro foram
-  completadas à mão. A (atrás) passa sob B; B (na frente) projeta uma sombra curta
-  sobre A; a sombra suave do personagem na faixa é um filtro de desfoque sobre a
-  própria imagem do personagem. Para animar: o desenho de entrada é o
-  `stroke-dashoffset` de todos os `path[data-pen]` (`useBandDraw.ts`); dá para
-  mexer em `d`, `stroke-width`, cor etc. direto nos paths.
-- **Entrada** — espera as fontes e as imagens (`data-ready` no card): o
-  personagem sobe, a palavra sobe de trás da linha de base, a saudação aparece e
-  a faixa se desenha (`useBandDraw.ts`). Com `prefers-reduced-motion`, tudo já
-  aparece pronto.
-- **Scroll** — `useHeroScrollScale`: o card encolhe; faixa e tipografia somem
-  em sequência, fica o personagem — e a assinatura é escrita por cima.
+- **Personagem** — `public/home/personagem.webp`, gerado por
+  `scripts/build-character.py`: cor, tons e retoques do recorte do design
+  (`assets/design/personagem-recortado.png`) + a nitidez da imagem original do
+  avatar (`assets/design/personagem-original.jpeg`, 1,17× maior). Com uma versão
+  ampliada do original (ex.: 2× pelo Super Resolution do Photoshop), basta rodar
+  `python scripts/build-character.py caminho/do/original`. Posição em
+  `hero-layout.ts`.
+- **Fundo e palavra (WebGL)** — `useHeroField.ts`, no estilo do landonorris.com:
+  - curvas de nível com **o mesmo relevo do fundo da segunda dobra**
+    (`hooks/topo.ts`, usado também por `useTopoLines`), no mesmo instante — ao
+    encolher, o card continua o padrão da página;
+  - "manchas de terreno" (patamares entre as curvas, em dois tons de cinza) só
+    no rastro do cursor, que some rápido como lá (≈ 0,4 s; eles usam um fluido
+    com dissipação 0,96 por quadro). Com o mouse parado por 2 s, um cursor
+    invisível faz um zigue-zague pela tela (o "idleState" deles) e repete a cada
+    9,5 s. O cursor em movimento também empurra as curvas perto dele;
+  - a palavra "PORTFÓLIO" é desenhada no mesmo shader: onde há mancha ela fica
+    azul (`BRAND_BLUE`), e ondula (distorção líquida), mais forte no rastro. Ela
+    é rasterizada na posição do `<text>` do SVG, que continua no DOM só como
+    referência de layout e fallback sem WebGL2.
+  - Ritmo em `SPEED` no topo do arquivo. Com `prefers-reduced-motion`, um quadro
+    parado.
+- **Entrada** — espera as fontes e a imagem (`data-ready` no card): o
+  personagem sobe, a palavra sobe de trás da linha de base e a saudação aparece.
+  Com `prefers-reduced-motion`, tudo já aparece pronto.
+- **Scroll** — `useHeroScrollScale`: o card encolhe, a tipografia some, ficam o
+  personagem e o fundo — e a assinatura é escrita por cima.
 
 ## Assinatura — `src/components/Signature.tsx`
 
@@ -131,7 +141,7 @@ e se apaga ao rolar de volta.
   aparece na ordem e direção em que a mão escreveu.
 - A assinatura fica numa camada própria (fora do card, que tem `overflow-hidden`),
   com ~72vw (92vw no celular) — bem maior que o card pousado, transbordando como
-  na referência. Os traços são pintados duas vezes: no azul da faixa recortados
+  na referência. Os traços são pintados duas vezes: no azul da página recortados
   ao card (branco) e em `text-ink` recortados ao resto (o recorte acompanha o
   card a cada quadro).
 - `useSignatureDraw.ts` — distribui o progresso pelo comprimento total das canetas
@@ -143,7 +153,8 @@ e se apaga ao rolar de volta.
 Line art topográfico atrás do letreiro (referência: landonorris.com), desenhado
 ao vivo num `<canvas>` por `src/hooks/useTopoLines.ts`:
 
-- o relevo é uma soma de ondas (cossenos em direções aleatórias, seed fixa);
+- o relevo (`src/hooks/topo.ts`, o mesmo do fundo da home) é uma soma de ondas
+  (cossenos em direções aleatórias, seed fixa);
   cada onda anda numa velocidade própria → as curvas se transformam devagar, e
   o conjunto desliza na diagonal (`DRIFT_X/Y`);
 - curvas de nível por marching squares; `LEVELS` / `LEVEL_GAP` controlam o
@@ -164,15 +175,17 @@ logo abaixo.
 
 **Cores depois da primeira dobra:** `--color-page` (fundo) e `--color-ink` (texto,
 linhas, letreiro, menu sobre o fundo) no `@theme` de `index.css` — geram
-`bg-page`, `text-ink/50`, `border-ink/10`… Segunda dobra (card + assinatura): azul
-`#081722` + branco. A partir da terceira dobra: creme `#e3e0cf` + azul-marinho
-`#0b1a24`. O tema é **por seção** (`usePageThemes`, no `App`): seções marcadas com
-`data-theme="light|dark"` e `data-theme-at` (fração da tela) — vale a última cujo
-topo já passou desse ponto; antes de todas, escuro. Hoje: Serviços → claro (5%),
-Ferramentas → escuro (60%), Sobre mim → claro (60%). As variáveis são registradas com `@property`, então
+`bg-page`, `text-ink/50`, `border-ink/10`… Segunda dobra (card + assinatura): o
+azul da palavra "PORTFÓLIO" `#0036b2` + branco (tema padrão). Claro
+(`html.theme-light`): branco `#fff` + azul-marinho `#0b1a24`. Escuro
+(`html.theme-dark`): azul-marinho `#081722` + branco. O tema é **por seção**
+(`usePageThemes`, no `App`): seções marcadas com `data-theme="light|dark"` e
+`data-theme-at` (fração da tela) — vale a última cujo topo já passou desse ponto;
+antes de todas, o azul. Hoje: Serviços → claro (5%), Ferramentas → escuro (60%),
+Sobre mim → claro (60%). As variáveis são registradas com `@property`, então
 a troca é uma transição de 0,8s de tudo que usa `bg-page` / `text-ink` (o canvas lê
 a cor a cada quadro). Volta ao azul ao rolar para cima. Títulos de seção usam
-`text-title` (`--color-title`): branco no azul, cinza quente `#84817b` no creme.
+`text-title` (`--color-title`): branco no azul, cinza quente `#84817b` no branco.
 
 As seções em cena fixa usam a base `useScrollScene`: palco alto + painel `sticky`
 de 100svh, progresso de entrada e de cena (0–1 com o painel parado), ambos com

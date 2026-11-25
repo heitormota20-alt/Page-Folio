@@ -1,8 +1,8 @@
 import { type RefObject, useEffect, useId, useRef, useState } from 'react'
-import { HeroBand } from './HeroBand'
 import { CHARACTER_BOX } from './hero-layout'
 import { Signature } from './Signature'
 import { useHeroScrollScale, useScrollExit } from '../hooks/useHeroScrollScale'
+import { useHeroField } from '../hooks/useHeroField'
 
 const [CX, CY, CW, CH] = CHARACTER_BOX
 /** Posição do personagem no quadro do design, em % (o palco escala junto). */
@@ -36,16 +36,19 @@ function useHeroReady(imgRef: RefObject<HTMLImageElement | null>) {
 }
 
 /**
- * Home — recriada do design (Home.psd / assets/design) inteiramente em código:
- * "PORTFÓLIO" em Anton atrás, a faixa azul vetorial contornando o personagem e
- * o avatar na frente. Tudo posicionado num quadro de 1920 × 1080 que escala
- * com a tela (classes .hero-* no index.css).
+ * Home — recriada do design (Home.psd / assets/design) em código: "PORTFÓLIO"
+ * em Anton atrás e o avatar na frente, num quadro de 1920 × 1080 que escala com
+ * a tela (classes .hero-* no index.css). O fundo e a palavra são um shader
+ * (useHeroField): curvas de nível com manchas que seguem o mouse, como no
+ * landonorris.com — onde a mancha passa, a palavra fica azul e ondula.
  *
- * Ao rolar, o card encolhe, a faixa e o texto somem e a assinatura é escrita.
+ * Ao rolar, o card encolhe, a tipografia some e a assinatura é escrita.
  */
 export function Hero() {
   const cardRef = useRef<HTMLDivElement>(null)
   const textRef = useRef<HTMLDivElement>(null)
+  const stageRef = useRef<HTMLDivElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
   const imgRef = useRef<HTMLImageElement>(null)
   const signatureLayerRef = useRef<HTMLDivElement>(null)
   const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
@@ -53,6 +56,7 @@ export function Hero() {
 
   useHeroScrollScale(cardRef, undefined, textRef)
   useScrollExit(signatureLayerRef)
+  useHeroField(canvasRef, { cardRef, stageRef, ready })
 
   return (
     <>
@@ -64,9 +68,15 @@ export function Hero() {
         <section id="top" className="absolute inset-0">
           <h1 className="sr-only">Seja bem vindo ao meu portfólio</h1>
 
-          {/* Atrás do personagem: tipografia e faixa (somem em sequência ao rolar) */}
+          {/* Fundo + "PORTFÓLIO" (WebGL) */}
+          <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full" />
+
+          {/*
+            Tipografia (some ao rolar). Com WebGL, o <text> do SVG fica invisível —
+            serve de referência de layout e de fallback.
+          */}
           <div ref={textRef} className="absolute inset-0">
-            <div className="hero-type" aria-hidden="true">
+            <div ref={stageRef} className="hero-type" aria-hidden="true">
               <p className="hero-greeting hero-fade font-['Inter',sans-serif] leading-none font-light whitespace-nowrap text-[#111] uppercase">
                 Seja bem vindo ao meu
               </p>
@@ -89,10 +99,6 @@ export function Hero() {
                   </text>
                 </g>
               </svg>
-            </div>
-
-            <div className="hero-art">
-              <HeroBand ready={ready} />
             </div>
           </div>
 

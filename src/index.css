@@ -3,14 +3,15 @@
 /*
   Cores da página depois da primeira dobra (fundo, letreiro, curvas de nível,
   seções e menu sobre o fundo). Geram as classes bg-page, text-ink, border-ink/10…
-  Segunda dobra (card + assinatura): azul. A partir da terceira dobra, creme —
-  html.theme-light, ligado por usePageTheme quando "No que eu posso te ajudar"
-  toma a tela.
+  Temas (usePageTheme, por seção):
+    padrão — segunda dobra (card + assinatura): o azul da palavra "PORTFÓLIO";
+    html.theme-light — branco, a partir de "No que eu posso te ajudar";
+    html.theme-dark — azul-marinho ("Minhas ferramentas de criação").
 */
 @theme {
-  --color-page: #081722;
+  --color-page: #0036b2;
   --color-ink: #fff;
-  /* títulos de seção (ex.: "No que eu posso te ajudar") — no creme, cinza quente */
+  /* títulos de seção (ex.: "No que eu posso te ajudar") — no branco, cinza quente */
   --color-title: #fff;
 }
 
@@ -19,7 +20,7 @@
 @property --color-page {
   syntax: '<color>';
   inherits: true;
-  initial-value: #081722;
+  initial-value: #0036b2;
 }
 @property --color-ink {
   syntax: '<color>';
@@ -38,8 +39,11 @@ html {
     --color-ink 0.8s ease,
     --color-title 0.8s ease;
 }
+html.theme-dark {
+  --color-page: #081722;
+}
 html.theme-light {
-  --color-page: #e3e0cf;
+  --color-page: #fff;
   --color-ink: #0b1a24;
   --color-title: #84817b;
 }
@@ -66,7 +70,7 @@ body {
 
 /*
   Home — "palcos" que reproduzem o quadro do design (1920 × 1080).
-  --ua: unidade do palco da arte (faixa + personagem) · --ut: do palco da tipografia.
+  --ua: unidade do palco do personagem · --ut: do palco da tipografia.
   Paisagem: os dois iguais, o quadro inteiro cabe na tela e assenta na base.
   Retrato (celular): a arte acompanha a largura com o personagem grande (corta as
   laterais) e a tipografia ocupa a largura toda, logo acima da cabeça.
@@ -113,14 +117,15 @@ body {
     bottom: auto;
     top: calc(100svh - var(--ua) * 1075 - var(--ut) * 824);
   }
-  /* a faixa sai do quadro pelas bordas; em retrato, não sobe por cima da palavra */
-  .hero-band {
-    clip-path: inset(0 -100vw);
-  }
   /* saudação (maior que a escala, para ler) acima do acento do Ó */
   .hero-greeting {
     bottom: calc(100% - var(--ut) * 240 - 0.136em);
   }
+}
+
+/* Com WebGL, a palavra é desenhada no canvas (useHeroField); o <text> só dá o layout */
+[data-gl] .hero-word {
+  visibility: hidden;
 }
 
 /* Entrada da home (quando fontes e imagem carregaram: [data-ready] no card) */

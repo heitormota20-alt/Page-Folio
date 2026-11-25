@@ -3,5 +3,5 @@
 /** Caixa do personagem (public/home/personagem.webp): x, y, largura, altura. */
 export const CHARACTER_BOX = [289, 0, 1322, 1080] as const
 
-/** Azul da faixa (do recorte do design) — também a cor da assinatura dentro do card. */
-export const BAND_BLUE = '#0036b2'
+/** Azul da página (o da faixa do design): a palavra pintada e a assinatura dentro do card. */
+export const BRAND_BLUE = '#0036b2'

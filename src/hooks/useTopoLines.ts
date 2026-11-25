@@ -1,5 +1,6 @@
 import { type RefObject, useEffect } from 'react'
 import { SCALE_END } from './useHeroScrollScale'
+import { LEVELS, LEVEL_GAP, makeWaves, topoTime, wavePhase } from './topo'
 
 /** Intensidade das linhas (opacidade do canvas) enquanto aparecem por inteiro. */
 const BASE_OPACITY = 0.14
@@ -13,64 +14,12 @@ const FADE_OUT_END = 1.0
 
 /** Tamanho da célula da grade, em px de tela (resolução das curvas). */
 const CELL = 8
-/** Quantas curvas de nível — menos curvas = linhas mais espaçadas. */
-const LEVELS = 9
-/** Distância entre curvas, em desvios-padrão do relevo. */
-const LEVEL_GAP = 0.5
-/** Escala do relevo: tamanho de referência das formas, em px. */
-const SCALE = 1500
-/** As curvas "passam" devagar na diagonal (px/s). */
-const DRIFT_X = 6
-const DRIFT_Y = 3.5
 /** Limite de quadros — o movimento é lento (≈0,25px por quadro), 24fps sobra. */
 const FPS = 24
 
-interface Wave {
-  ax: number // frequência angular em x (rad/px)
-  ay: number // frequência angular em y (rad/px)
-  amp: number
-  phase: number
-  speed: number // velocidade de fase (rad/s): faz o relevo se transformar
-}
-
-/** PRNG determinístico: o desenho é sempre o mesmo ao recarregar. */
-function mulberry32(seed: number) {
-  return () => {
-    seed |= 0
-    seed = (seed + 0x6d2b79f5) | 0
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
 /**
- * Relevo = soma de ondas (cossenos) em direções aleatórias. Amplitude cai com a
- * frequência (formas grandes dominam); cada onda anda numa velocidade de fase
- * própria → as curvas de nível se transformam devagar.
- */
-function makeWaves(seed: number): { waves: Wave[]; sigma: number } {
-  const rand = mulberry32(seed)
-  const waves: Wave[] = []
-  let power = 0
-  for (let i = 0; i < 26; i++) {
-    const k = 1 + rand() * 3.2 // ciclos por SCALE
-    const dir = rand() * Math.PI * 2
-    const amp = k ** -1.9 * (0.6 + rand() * 0.4)
-    waves.push({
-      ax: ((2 * Math.PI * k) / SCALE) * Math.cos(dir),
-      ay: ((2 * Math.PI * k) / SCALE) * Math.sin(dir),
-      amp,
-      phase: rand() * Math.PI * 2,
-      speed: (0.04 + rand() * 0.07) * (rand() < 0.5 ? -1 : 1),
-    })
-    power += (amp * amp) / 2
-  }
-  return { waves, sigma: Math.sqrt(power) }
-}
-
-/**
- * Desenha curvas de nível animadas (line art topográfico) num <canvas>.
+ * Desenha curvas de nível animadas (line art topográfico) num <canvas> — relevo
+ * em ./topo (o mesmo do fundo da home).
  * É o fundo da página inteira; só não roda no topo (scroll 0), onde a hero
  * cobre a tela. Com prefers-reduced-motion, desenha um quadro parado.
  */
@@ -80,7 +29,7 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const ctx = canvas?.getContext('2d')
     if (!canvas || !ctx) return
 
-    const { waves, sigma } = makeWaves(7)
+    const { waves, sigma } = makeWaves()
     const levels = Array.from(
       { length: LEVELS },
       (_, i) => (i - (LEVELS - 1) / 2) * LEVEL_GAP * sigma,
@@ -117,8 +66,7 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     const computeField = (t: number) => {
       field.fill(0)
       for (const wv of waves) {
-        // deslocar o relevo por (DRIFT·t) = somar −a·DRIFT·t na fase
-        const ph = wv.phase + wv.speed * t - (wv.ax * DRIFT_X + wv.ay * DRIFT_Y) * t
+        const ph = wavePhase(wv, t)
         for (let c = 0; c < cols; c++) {
           const a = wv.ax * c * CELL + ph
           cx[c] = Math.cos(a) * wv.amp
@@ -214,7 +162,6 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     }
 
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    const t0 = performance.now()
     let frame = 0
     let last = 0
 
@@ -236,7 +183,7 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
       if (!isVisible()) return // para; o scroll religa
       if (now - last >= 1000 / FPS - 1) {
         last = now
-        render((now - t0) / 1000)
+        render(topoTime(now))
       }
       frame = requestAnimationFrame(loop)
     }
@@ -264,7 +211,7 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
 
     const onResize = () => {
       resize()
-      render(reduceMotion ? 0 : (performance.now() - t0) / 1000)
+      render(reduceMotion ? 0 : topoTime())
     }
 
     onResize()
