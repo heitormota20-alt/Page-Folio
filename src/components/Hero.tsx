@@ -1,57 +1,115 @@
-import { useRef } from 'react'
-import { ScrubVideo } from './ScrubVideo'
+import { type RefObject, useEffect, useId, useRef, useState } from 'react'
+import { HeroBand } from './HeroBand'
+import { CHARACTER_BOX } from './hero-layout'
 import { Signature } from './Signature'
 import { useHeroScrollScale, useScrollExit } from '../hooks/useHeroScrollScale'
 
-export function Hero() {
-  const cardRef    = useRef<HTMLDivElement>(null)
-  const overlayRef = useRef<HTMLDivElement>(null)
-  const textRef    = useRef<HTMLDivElement>(null)
-  const signatureLayerRef = useRef<HTMLDivElement>(null)
+const [CX, CY, CW, CH] = CHARACTER_BOX
+/** Posição do personagem no quadro do design, em % (o palco escala junto). */
+const CHARACTER_STYLE = {
+  left: `${(CX / 1920) * 100}%`,
+  top: `${(CY / 1080) * 100}%`,
+  width: `${(CW / 1920) * 100}%`,
+  height: `${(CH / 1080) * 100}%`,
+}
 
-  useHeroScrollScale(cardRef, overlayRef, textRef)
+/** Espera fontes e imagem antes da entrada — sem pulo de fonte nem personagem pela metade. */
+function useHeroReady(imgRef: RefObject<HTMLImageElement | null>) {
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    let alive = true
+    const img = imgRef.current
+    const fonts = document.fonts
+      ? Promise.all([document.fonts.load('100px Anton'), document.fonts.load('300 40px Inter')])
+      : Promise.resolve()
+    const image = img ? img.decode().catch(() => undefined) : Promise.resolve()
+    // rede lenta: não segura a página em branco mais que isso
+    const timeout = new Promise((r) => setTimeout(r, 2500))
+    Promise.race([Promise.all([fonts, image]), timeout]).then(() => {
+      if (alive) setReady(true)
+    })
+    return () => {
+      alive = false
+    }
+  }, [imgRef])
+  return ready
+}
+
+/**
+ * Home — recriada do design (Home.psd / assets/design) inteiramente em código:
+ * "PORTFÓLIO" em Anton atrás, a faixa azul vetorial contornando o personagem e
+ * o avatar na frente. Tudo posicionado num quadro de 1920 × 1080 que escala
+ * com a tela (classes .hero-* no index.css).
+ *
+ * Ao rolar, o card encolhe, a faixa e o texto somem e a assinatura é escrita.
+ */
+export function Hero() {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const textRef = useRef<HTMLDivElement>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
+  const signatureLayerRef = useRef<HTMLDivElement>(null)
+  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, '')
+  const ready = useHeroReady(imgRef)
+
+  useHeroScrollScale(cardRef, undefined, textRef)
   useScrollExit(signatureLayerRef)
 
   return (
     <>
       <div
         ref={cardRef}
-        className="fixed inset-0 z-[1] overflow-hidden will-change-transform"
+        data-ready={ready || undefined}
+        className="hero-card fixed inset-0 z-[1] overflow-hidden bg-white will-change-transform"
       >
-        <ScrubVideo />
+        <section id="top" className="absolute inset-0">
+          <h1 className="sr-only">Seja bem vindo ao meu portfólio</h1>
 
-        {/* Overlay de cor do bg — sobe levemente para integrar ao fundo */}
-        <div
-          ref={overlayRef}
-          className="pointer-events-none absolute inset-0 z-[3] bg-[#081722]"
-          style={{ opacity: 0 }}
-        />
+          {/* Atrás do personagem: tipografia e faixa (somem em sequência ao rolar) */}
+          <div ref={textRef} className="absolute inset-0">
+            <div className="hero-type" aria-hidden="true">
+              <p className="hero-greeting hero-fade font-['Inter',sans-serif] leading-none font-light whitespace-nowrap text-[#111] uppercase">
+                Seja bem vindo ao meu
+              </p>
+              <svg viewBox="0 0 1920 1080" className="absolute inset-0 h-full w-full overflow-visible">
+                <defs>
+                  {/* a palavra sobe de trás da linha de base */}
+                  <clipPath id={`${uid}-word`}>
+                    <rect x="-200" y="0" width="2320" height="836" />
+                  </clipPath>
+                </defs>
+                <g clipPath={`url(#${uid}-word)`}>
+                  <text
+                    className="hero-word"
+                    x="-21.4"
+                    y="824"
+                    fill="#222"
+                    style={{ fontFamily: 'Anton, Impact, sans-serif', fontSize: 526, letterSpacing: -8.3 }}
+                  >
+                    PORTFÓLIO
+                  </text>
+                </g>
+              </svg>
+            </div>
 
-        <section
-          id="top"
-          className="relative z-[2] flex min-h-[100svh] flex-col justify-center px-6 sm:px-10 lg:px-16"
-        >
-          {/* Texto que some conforme o card encolhe, deixando só o avatar */}
-          <div
-            ref={textRef}
-            className="max-w-[46rem] [text-shadow:0_2px_30px_rgba(4,16,24,0.55)]"
-          >
-            <p className="mb-5 flex flex-row items-center gap-3 sm:mb-7 sm:gap-4">
-              <span aria-hidden="true" className="inline-block h-px w-8 bg-white/55 sm:w-16" />
-              <span className="text-[10px] font-medium tracking-[0.16em] text-white/80 uppercase sm:text-[13px] sm:tracking-[0.22em]">
-                Seja muito bem vindo ao:
-              </span>
-            </p>
+            <div className="hero-art">
+              <HeroBand ready={ready} />
+            </div>
+          </div>
 
-            <h1 className="font-heading text-[clamp(2rem,7.5vw,6.5rem)] leading-[1.06] tracking-[-0.01em] text-white uppercase">
-              <span className="block">Page</span>
-              <span className="block">Fólio</span>
-            </h1>
-
-            <p className="mt-7 max-w-md text-[15px] leading-relaxed text-white/85 sm:mt-9 sm:text-base">
-              Aqui é o lugar onde você irá encontrar os meus principais projetos de
-              teste e projetos validados que obtiveram a maior performance.
-            </p>
+          {/* Personagem na frente de tudo */}
+          <div className="hero-art pointer-events-none">
+            <img
+              ref={imgRef}
+              src="/home/personagem.webp"
+              alt="Avatar 3D de Heitor Mota"
+              width={CW}
+              height={CH}
+              decoding="async"
+              fetchPriority="high"
+              className="hero-character absolute max-w-none select-none"
+              style={CHARACTER_STYLE}
+              draggable={false}
+            />
           </div>
         </section>
       </div>

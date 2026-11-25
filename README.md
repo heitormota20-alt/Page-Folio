@@ -1,7 +1,12 @@
 # Page Fólio
 
-Landing page de tela cheia com vídeo de fundo controlado pelo movimento horizontal
-do mouse (e do toque). O vídeo nunca toca — só é posicionado com `currentTime`.
+Portfólio de Heitor Mota. A home é o design feito no Photoshop (`assets/design/`)
+recriado em código: "PORTFÓLIO" em Anton atrás, a faixa azul se desenhando em volta
+do personagem e o avatar na frente. Ao rolar, o card encolhe e a assinatura é escrita.
+
+> A home anterior (vídeo do personagem virando a cabeça com o mouse —
+> `ScrubVideo.tsx` + `useVideoScrub.ts`, seções "O núcleo" e "Passo 0" abaixo)
+> continua no projeto, mas não é mais usada.
 
 ## Stack
 
@@ -21,13 +26,14 @@ Page-Folio/
 │   │   ├── character-turning-head.mp4    # fonte (download do Streamable)
 │   │   └── character-turning-head.webm   # backup web (VP9), caso o link expire
 │   ├── frames/                   # primeiro / último frame do clipe
-│   └── design/                   # mockup da home
+│   └── design/                   # design da home (PNGs) e os recortes originais
 ├── public/
-│   └── personagem.mp4            # vídeo all-intra servido pelo site
+│   ├── home/                     # personagem da home (WebP)
+│   └── personagem.mp4            # vídeo all-intra (home antiga, sem uso)
 ├── scripts/prepare-video.mjs     # gera public/personagem.mp4
 ├── src/
-│   ├── components/               # ScrubVideo, Navbar, Hero, Sections
-│   ├── hooks/                    # useVideoScrub, useLenis
+│   ├── components/               # Hero, HeroBand, Signature, Navbar, seções…
+│   ├── hooks/                    # useHeroScrollScale, useBandDraw, useLenis…
 │   ├── App.tsx · main.tsx · index.css
 └── index.html · vite.config.ts · tsconfig*.json
 ```
@@ -79,6 +85,37 @@ npm run dev
 
 Carregadas via Google Fonts no `index.html`. `body` usa `var(--font-body)`.
 
+## Home — `src/components/Hero.tsx`
+
+Recriação do design (`assets/design/Home.png` e `Home_faixa.png`, 1920 × 1080):
+
+- **Quadro de 1920 × 1080** que escala com a tela (`.hero-card`, `.hero-art`,
+  `.hero-type` no `index.css`): tudo é posicionado em coordenadas do design. Em
+  paisagem o quadro inteiro cabe e assenta na base; em retrato (celular) o
+  personagem fica grande (ombros cortados) e a palavra ocupa a largura logo acima
+  da cabeça.
+- **"PORTFÓLIO"** — texto de verdade em Anton (SVG `<text>`, tamanho e espaçamento
+  medidos no PNG), `#222`. **"SEJA BEM VINDO AO MEU"** — Inter Light. Há um `h1`
+  só para leitores de tela.
+- **Personagem** — `public/home/personagem.webp`, do recorte
+  `assets/design/personagem-recortado.png` (posição em `hero-layout.ts`).
+- **Faixa azul** — `HeroBand.tsx`, inteira em código: cada laço é **um `path`
+  com espessura** (`stroke-width` ≈ 186, cor `BAND_BLUE` em `hero-layout.ts`).
+  As linhas centrais (`hero-band-paths.ts`) foram medidas no recorte
+  `assets/design/Laços-Azuis-em-Camadas.png` — onde a faixa aparece, seguem o
+  meio dela; atrás do personagem, sob o outro laço e fora do quadro foram
+  completadas à mão. A (atrás) passa sob B; B (na frente) projeta uma sombra curta
+  sobre A; a sombra suave do personagem na faixa é um filtro de desfoque sobre a
+  própria imagem do personagem. Para animar: o desenho de entrada é o
+  `stroke-dashoffset` de todos os `path[data-pen]` (`useBandDraw.ts`); dá para
+  mexer em `d`, `stroke-width`, cor etc. direto nos paths.
+- **Entrada** — espera as fontes e as imagens (`data-ready` no card): o
+  personagem sobe, a palavra sobe de trás da linha de base, a saudação aparece e
+  a faixa se desenha (`useBandDraw.ts`). Com `prefers-reduced-motion`, tudo já
+  aparece pronto.
+- **Scroll** — `useHeroScrollScale`: o card encolhe; faixa e tipografia somem
+  em sequência, fica o personagem — e a assinatura é escrita por cima.
+
 ## Assinatura — `src/components/Signature.tsx`
 
 Referência: o efeito `signature_scroll` de landonorris.com (lá é um Rive; aqui é
@@ -94,8 +131,9 @@ e se apaga ao rolar de volta.
   aparece na ordem e direção em que a mão escreveu.
 - A assinatura fica numa camada própria (fora do card, que tem `overflow-hidden`),
   com ~72vw (92vw no celular) — bem maior que o card pousado, transbordando como
-  na referência. Os traços são pintados duas vezes: brancos recortados ao card e
-  em `text-ink` recortados ao resto (o recorte acompanha o card a cada quadro).
+  na referência. Os traços são pintados duas vezes: no azul da faixa recortados
+  ao card (branco) e em `text-ink` recortados ao resto (o recorte acompanha o
+  card a cada quadro).
 - `useSignatureDraw.ts` — distribui o progresso pelo comprimento total das canetas
   e faz a caneta perseguir o scroll com um leve atraso (`lag`, o equivalente ao
   `scrub` do GSAP). Com `prefers-reduced-motion`, sem atraso.
@@ -128,8 +166,10 @@ logo abaixo.
 linhas, letreiro, menu sobre o fundo) no `@theme` de `index.css` — geram
 `bg-page`, `text-ink/50`, `border-ink/10`… Segunda dobra (card + assinatura): azul
 `#081722` + branco. A partir da terceira dobra: creme `#e3e0cf` + azul-marinho
-`#0b1a24` — `usePageTheme` (em `Services.tsx`) liga `html.theme-light` quando a
-cena da terceira seção para na tela (topo da seção a 5% do topo). As variáveis são registradas com `@property`, então
+`#0b1a24`. O tema é **por seção** (`usePageThemes`, no `App`): seções marcadas com
+`data-theme="light|dark"` e `data-theme-at` (fração da tela) — vale a última cujo
+topo já passou desse ponto; antes de todas, escuro. Hoje: Serviços → claro (5%),
+Ferramentas → escuro (60%), Sobre mim → claro (60%). As variáveis são registradas com `@property`, então
 a troca é uma transição de 0,8s de tudo que usa `bg-page` / `text-ink` (o canvas lê
 a cor a cada quadro). Volta ao azul ao rolar para cima. Títulos de seção usam
 `text-title` (`--color-title`): branco no azul, cinza quente `#84817b` no creme.
@@ -160,6 +200,15 @@ enquanto os cards dos serviços saem. **As peças são provisórias** (pôsteres
 abstratos): para usar as artes reais, coloque os arquivos em `public/arquivos/` e
 passe `src` em cada item de `PIECES`.
 
+## Minhas ferramentas de criação — `src/components/Toolkit.tsx`
+
+Cena fixa (`useToolkitScene`, palco de 300vh), no tema escuro: título apagado
+(`text-title/45`) no centro e os cartões das ferramentas subindo amontoados pela
+parte de baixo, rodopiando (`spin`), por cima dele. Usa o mesmo movimento das
+peças dos Arquivos (`floatPieces`, em `useScrollScene`). **A lista de ferramentas
+é provisória** e os cartões mostram siglas nas cores das marcas — para logos
+reais, SVGs em `public/ferramentas/` e `logo` em cada item de `TOOLS`.
+
 **Atenção:** com "reduzir movimento" ligado no sistema (no Windows: Configurações →
 Acessibilidade → Efeitos visuais → Efeitos de animação desligado), os efeitos de
 movimento (subida do título, cards, curvas de nível) ficam desligados de propósito.
@@ -170,6 +219,13 @@ No topo, três botões. Passando de 25% do viewport de scroll (segunda dobra), e
 deslizam até o canto e se recolhem num botão hambúrguer; ao voltar acima de 18%,
 abrem de novo. Clicar no hambúrguer faz os botões saírem (o ícone vira X); clicar
 num link, no X ou apertar Esc recolhe. Só CSS transitions (transform/opacity).
+
+## Recorte do personagem do vídeo (ferramenta, sem uso no site)
+
+`scripts/cutout-frames.py` gera, a partir de `public/Personagem_Definitivo_scrub.mp4`,
+os quadros do personagem SEM o fundo azul (WebP com transparência em
+`public/personagem/`, ≈ 6 MB, ~3 min) — base para uma home com conteúdo atrás do
+personagem. Requer numpy, pillow e ffmpeg.
 
 ## O núcleo — `src/hooks/useVideoScrub.ts`
 

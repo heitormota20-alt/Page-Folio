@@ -64,6 +64,110 @@ body {
   font-family: var(--font-heading);
 }
 
+/*
+  Home — "palcos" que reproduzem o quadro do design (1920 × 1080).
+  --ua: unidade do palco da arte (faixa + personagem) · --ut: do palco da tipografia.
+  Paisagem: os dois iguais, o quadro inteiro cabe na tela e assenta na base.
+  Retrato (celular): a arte acompanha a largura com o personagem grande (corta as
+  laterais) e a tipografia ocupa a largura toda, logo acima da cabeça.
+*/
+.hero-card {
+  --ua: min(100vw / 1920, 100svh / 1080);
+  --ut: var(--ua);
+}
+.hero-art,
+.hero-type {
+  position: absolute;
+  left: 50%;
+  translate: -50% 0;
+}
+.hero-art {
+  width: calc(var(--ua) * 1920);
+  height: calc(var(--ua) * 1080);
+  bottom: 0;
+}
+.hero-type {
+  width: calc(var(--ut) * 1920);
+  height: calc(var(--ut) * 1080);
+  bottom: 0;
+}
+/*
+  "SEJA BEM VINDO AO MEU": canto direito e linha de base (y 333) presos ao design;
+  no celular, tamanho mínimo legível. 0.136em = da base ao pé da caixa (Inter, line-height 1).
+*/
+.hero-greeting {
+  position: absolute;
+  right: calc(var(--ut) * 95);
+  letter-spacing: -0.0225em;
+  bottom: calc(100% - var(--ut) * 333 - 0.136em);
+  font-size: max(11px, calc(var(--ut) * 37.8));
+}
+@media (orientation: portrait) {
+  .hero-card {
+    /* personagem bem maior que a largura (ombros cortados), sem passar da altura */
+    --ua: min(100vw / 700, 100svh / 1650);
+    --ut: calc(100vw / 1920);
+  }
+  /* palavra logo acima da cabeça (cabelo e letras escuros não se misturam) */
+  .hero-type {
+    bottom: auto;
+    top: calc(100svh - var(--ua) * 1075 - var(--ut) * 824);
+  }
+  /* a faixa sai do quadro pelas bordas; em retrato, não sobe por cima da palavra */
+  .hero-band {
+    clip-path: inset(0 -100vw);
+  }
+  /* saudação (maior que a escala, para ler) acima do acento do Ó */
+  .hero-greeting {
+    bottom: calc(100% - var(--ut) * 240 - 0.136em);
+  }
+}
+
+/* Entrada da home (quando fontes e imagem carregaram: [data-ready] no card) */
+.hero-word {
+  transform-box: fill-box;
+  transform: translateY(105%);
+}
+.hero-fade,
+.hero-character {
+  opacity: 0;
+}
+[data-ready] .hero-word {
+  transform: none;
+  animation: hero-rise 1.1s cubic-bezier(0.2, 0.75, 0.1, 1) 0.1s both;
+}
+[data-ready] .hero-fade {
+  opacity: 1;
+  animation: hero-fade-up 0.8s ease-out 0.45s both;
+}
+[data-ready] .hero-character {
+  opacity: 1;
+  animation: hero-fade-up-big 1s cubic-bezier(0.2, 0.75, 0.1, 1) both;
+}
+@keyframes hero-rise {
+  from { transform: translateY(105%); }
+}
+@keyframes hero-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+}
+@keyframes hero-fade-up-big {
+  from { opacity: 0; transform: translateY(4%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-word,
+  [data-ready] .hero-word {
+    transform: none;
+    animation: none;
+  }
+  .hero-fade,
+  .hero-character,
+  [data-ready] .hero-fade,
+  [data-ready] .hero-character {
+    opacity: 1;
+    animation: none;
+  }
+}
+
 @keyframes marquee-left {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }

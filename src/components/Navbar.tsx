@@ -16,9 +16,9 @@ const ON_PAGE_AT = 0.03
 const EASE = 'cubic-bezier(0.77, 0, 0.18, 1)'
 const STAGGER = 55 // ms entre um botão e outro
 
-// Vidro claro sobre a hero (vídeo); na segunda dobra, sobre o fundo da página, usa a cor "ink"
+// Vidro escuro sobre a hero (fundo branco); na segunda dobra, sobre o fundo da página, usa a cor "ink"
 const glassOnHero =
-  'border border-white/10 bg-white/5 text-white/90 backdrop-blur-md hover:border-white/25 hover:bg-white/12 hover:text-white'
+  'border border-[#222]/12 bg-white/55 text-[#222] backdrop-blur-md hover:border-[#222]/30 hover:bg-white/80'
 const glassOnPage =
   'border border-ink/10 bg-ink/5 text-ink/90 backdrop-blur-md hover:border-ink/25 hover:bg-ink/12 hover:text-ink'
 
