@@ -16,12 +16,12 @@ export function Marquee({ text, speed = 20, direction = 'left' }: MarqueeProps) 
         className="inline-flex"
         style={{ animation: `${anim} ${speed}s linear infinite` }}
       >
-        <span className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-none text-white/20 uppercase">
+        <span className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-none text-ink/20 uppercase">
           {content}
         </span>
         <span
           aria-hidden="true"
-          className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-none text-white/20 uppercase"
+          className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-none text-ink/20 uppercase"
         >
           {content}
         </span>

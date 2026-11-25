@@ -18,7 +18,7 @@ export default function App() {
   return (
     <>
       {/* Fundo contínuo da página inteira: cor + curvas de nível */}
-      <div className="fixed inset-0 z-0 overflow-hidden bg-[#081722]">
+      <div className="fixed inset-0 z-0 overflow-hidden bg-page">
         <TopoLines />
       </div>
 

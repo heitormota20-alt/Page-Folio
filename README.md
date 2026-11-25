@@ -92,6 +92,10 @@ e se apaga ao rolar de volta.
 - `Signature.tsx` — cada `shape` fica dentro de uma `<mask>` cuja caneta é
   desenhada com `stroke-dashoffset`: o pincel (com a espessura variável original)
   aparece na ordem e direção em que a mão escreveu.
+- A assinatura fica numa camada própria (fora do card, que tem `overflow-hidden`),
+  com ~72vw (92vw no celular) — bem maior que o card pousado, transbordando como
+  na referência. Os traços são pintados duas vezes: brancos recortados ao card e
+  em `text-ink` recortados ao resto (o recorte acompanha o card a cada quadro).
 - `useSignatureDraw.ts` — distribui o progresso pelo comprimento total das canetas
   e faz a caneta perseguir o scroll com um leve atraso (`lag`, o equivalente ao
   `scrub` do GSAP). Com `prefers-reduced-motion`, sem atraso.
@@ -117,9 +121,30 @@ pouso do card (`SCALE_END`), o card (`useHeroScrollScale`) e o letreiro
 (`useScrollExit`) sobem junto com a página, e "No que eu posso te ajudar" entra
 logo abaixo.
 
-`useScrollReveal` amarra a revelação à rolagem (avança e volta): as palavras de
-`[data-reveal-words]` acendem em sequência e cada `[data-reveal]` sobe e aparece
-ao entrar na tela. A lista de serviços em `Services.tsx` é provisória.
+**Cores depois da primeira dobra:** `--color-page` (fundo) e `--color-ink` (texto,
+linhas, letreiro, menu sobre o fundo) no `@theme` de `index.css` — geram
+`bg-page`, `text-ink/50`, `border-ink/10`… Segunda dobra (card + assinatura): azul
+`#081722` + branco. A partir da terceira dobra: creme `#e3e0cf` + azul-marinho
+`#0b1a24` — `usePageTheme` (em `Services.tsx`) liga `html.theme-light` quando a
+cena da terceira seção para na tela (topo da seção a 5% do topo). As variáveis são registradas com `@property`, então
+a troca é uma transição de 0,8s de tudo que usa `bg-page` / `text-ink` (o canvas lê
+a cor a cada quadro). Volta ao azul ao rolar para cima. Títulos de seção usam
+`text-title` (`--color-title`): branco no azul, cinza quente `#84817b` no creme.
+
+A seção é uma **cena fixa na tela** (`useServicesScene`): um palco de 260vh com um
+painel `sticky` de 100svh. Enquanto o painel sobe até parar, as linhas do título
+sobem por trás das suas janelas (`overflow-hidden`). Com ele parado (160vh de
+rolagem): o título fica sozinho no centro; os 4 cards voam de baixo em arco
+(x e y com curvas diferentes), girando de 4× até a inclinação final (`data-rot`),
+passam um pouco do ponto (ease-out-back) e assentam desencontrados (`data-y`,
+`data-delay`), cobrindo o título, que sobe de leve e se apaga; por fim, a
+composição fica parada antes de a cena seguir. Todo o movimento tem inércia
+(`LAG`). `-mt-[40vh]` faz o título entrar logo depois do card da hero. Os
+serviços dos cards são provisórios.
+
+**Atenção:** com "reduzir movimento" ligado no sistema (no Windows: Configurações →
+Acessibilidade → Efeitos visuais → Efeitos de animação desligado), os efeitos de
+movimento (subida do título, cards, curvas de nível) ficam desligados de propósito.
 
 ## Menu — `src/components/Navbar.tsx`
 

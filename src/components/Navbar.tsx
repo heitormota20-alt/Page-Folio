@@ -10,12 +10,17 @@ const LINKS = [
 const COLLAPSE_AT = 0.25
 /** …e volta a abrir abaixo desta (folga evita piscar no limite). */
 const EXPAND_AT = 0.18
+/** A partir daqui o canto do menu já está sobre o fundo da página (não mais sobre a hero). */
+const ON_PAGE_AT = 0.03
 
 const EASE = 'cubic-bezier(0.77, 0, 0.18, 1)'
 const STAGGER = 55 // ms entre um botão e outro
 
-const glass =
+// Vidro claro sobre a hero (vídeo); na segunda dobra, sobre o fundo da página, usa a cor "ink"
+const glassOnHero =
   'border border-white/10 bg-white/5 text-white/90 backdrop-blur-md hover:border-white/25 hover:bg-white/12 hover:text-white'
+const glassOnPage =
+  'border border-ink/10 bg-ink/5 text-ink/90 backdrop-blur-md hover:border-ink/25 hover:bg-ink/12 hover:text-ink'
 
 /**
  * No topo: os três botões. Na segunda dobra, eles deslizam até o canto e se
@@ -24,8 +29,12 @@ const glass =
  */
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  // o card encolhe logo no começo do scroll e o canto do menu já fica sobre o
+  // fundo da página — o estilo troca antes de recolher
+  const [onPage, setOnPage] = useState(false)
   const [open, setOpen] = useState(false)
   const collapsed = scrolled && !open
+  const glass = onPage ? glassOnPage : glassOnHero
 
   const linkRefs = useRef<(HTMLAnchorElement | null)[]>([])
   const burgerRef = useRef<HTMLButtonElement>(null)
@@ -37,6 +46,7 @@ export function Navbar() {
     const onScroll = () => {
       const r = window.scrollY / (window.innerHeight || 1)
       setScrolled((prev) => (prev ? r > EXPAND_AT : r > COLLAPSE_AT))
+      setOnPage(r > ON_PAGE_AT)
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })

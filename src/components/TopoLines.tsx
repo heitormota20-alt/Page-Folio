@@ -14,7 +14,8 @@ export function TopoLines() {
     <canvas
       ref={ref}
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 h-full w-full opacity-[0.14]"
+      // a cor das linhas vem de `color` (text-ink); a intensidade, da opacidade
+      className="pointer-events-none absolute inset-0 h-full w-full text-ink opacity-[0.14]"
     />
   )
 }

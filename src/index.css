@@ -1,12 +1,56 @@
 @import 'tailwindcss';
 
+/*
+  Cores da página depois da primeira dobra (fundo, letreiro, curvas de nível,
+  seções e menu sobre o fundo). Geram as classes bg-page, text-ink, border-ink/10…
+  Segunda dobra (card + assinatura): azul. A partir da terceira dobra, creme —
+  html.theme-light, ligado por usePageTheme quando "No que eu posso te ajudar"
+  toma a tela.
+*/
+@theme {
+  --color-page: #081722;
+  --color-ink: #fff;
+  /* títulos de seção (ex.: "No que eu posso te ajudar") — no creme, cinza quente */
+  --color-title: #fff;
+}
+
+/* Registradas como <color> para a troca de tema ser uma transição suave das
+   próprias variáveis — tudo que usa bg-page / text-ink acompanha. */
+@property --color-page {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #081722;
+}
+@property --color-ink {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #fff;
+}
+@property --color-title {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #fff;
+}
+
+html {
+  transition:
+    --color-page 0.8s ease,
+    --color-ink 0.8s ease,
+    --color-title 0.8s ease;
+}
+html.theme-light {
+  --color-page: #e3e0cf;
+  --color-ink: #0b1a24;
+  --color-title: #84817b;
+}
+
 :root {
   --font-heading: 'Zen Dots', 'Helvetica Neue', Arial, sans-serif;
   --font-body: 'Sora', 'Helvetica Neue', Arial, sans-serif;
 }
 
 html {
-  background: #0b2233;
+  background: var(--color-page);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }

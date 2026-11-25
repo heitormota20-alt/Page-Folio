@@ -193,7 +193,9 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
       ctx.clearRect(0, 0, w, h)
       ctx.beginPath()
       for (const lv of levels) drawLevel(lv)
-      ctx.strokeStyle = '#fff'
+      // cor das linhas = `color` do canvas (text-ink) — lida a cada quadro para
+      // acompanhar a transição de tema
+      ctx.strokeStyle = getComputedStyle(canvas).color
       ctx.lineWidth = 1
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
@@ -218,14 +220,28 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
       frame = requestAnimationFrame(loop)
     }
 
+    // Movimento reduzido: quadro parado (t = 0), redesenhado só ao rolar —
+    // por ~1s, para acompanhar a transição de cor do tema
+    let settleUntil = 0
+    const still = (now: number) => {
+      frame = 0
+      render(0)
+      if (now < settleUntil) frame = requestAnimationFrame(still)
+    }
+
     const start = () => {
-      if (reduceMotion || frame || !isVisible()) return
+      if (reduceMotion) {
+        settleUntil = performance.now() + 1000
+        if (!frame) frame = requestAnimationFrame(still)
+        return
+      }
+      if (frame || !isVisible()) return
       frame = requestAnimationFrame(loop)
     }
 
     const onResize = () => {
       resize()
-      render((performance.now() - t0) / 1000)
+      render(reduceMotion ? 0 : (performance.now() - t0) / 1000)
     }
 
     onResize()
