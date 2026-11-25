@@ -31,7 +31,8 @@ export function Services() {
   usePillPhysics(pileRef)
 
   return (
-    <section id="ajuda" className="relative overflow-x-clip">
+    // data-topo-end: as curvas de nível do fundo seguem até o fim desta seção
+    <section id="ajuda" data-topo-end="" className="relative overflow-x-clip">
       <div className="flex min-h-[100svh] flex-col px-6 pt-[16vh] sm:px-10 lg:px-16">
         <header className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between lg:gap-12">
           <h2 className="text-ink">

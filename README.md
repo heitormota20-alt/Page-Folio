@@ -160,9 +160,10 @@ ao vivo num `<canvas>` por `src/hooks/useTopoLines.ts`:
   o conjunto desliza na diagonal (`DRIFT_X/Y`);
 - curvas de nível por marching squares; `LEVELS` / `LEVEL_GAP` controlam o
   espaçamento, `SCALE` o tamanho das formas;
-- na segunda dobra as linhas vão sumindo: inteiras até o pouso do card
-  (`SCALE_END`), apagadas em 1,0 viewport de scroll (`FADE_OUT_*`) — da terceira
-  dobra em diante o fundo é liso;
+- as linhas seguem enquanto a página está no azul (segunda dobra e "No que eu
+  posso te ajudar") e se apagam quando o fim da seção marcada com
+  `data-topo-end` sobe do pé da tela até a metade (`FADE_OUT_END`) — quando a
+  página vira branca; dali em diante o fundo é liso;
 - 24 fps e só enquanto aparecem (entre a hero começar a encolher e sumirem).
   Com `prefers-reduced-motion`, um quadro parado.
 

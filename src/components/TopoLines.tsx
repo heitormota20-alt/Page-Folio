@@ -15,7 +15,7 @@ export function TopoLines() {
       ref={ref}
       aria-hidden="true"
       // a cor das linhas vem de `color` (text-ink); a intensidade (opacidade) é
-      // controlada pelo hook — some ao longo da segunda dobra
+      // controlada pelo hook — some no fim de "No que eu posso te ajudar"
       className="pointer-events-none absolute inset-0 h-full w-full text-ink"
     />
   )

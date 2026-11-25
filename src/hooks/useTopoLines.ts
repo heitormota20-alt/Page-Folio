@@ -1,16 +1,16 @@
 import { type RefObject, useEffect } from 'react'
-import { SCALE_END } from './useHeroScrollScale'
 import { LEVELS, LEVEL_GAP, makeWaves, topoTime, wavePhase } from './topo'
 
 /** Intensidade das linhas (opacidade do canvas) enquanto aparecem por inteiro. */
 const BASE_OPACITY = 0.14
 /**
- * Na segunda dobra as linhas vão sumindo: inteiras até o pouso do card
- * (SCALE_END) e apagadas por completo em FADE_OUT_END (frações de viewport de
- * scroll). Apagadas, o desenho para.
+ * As linhas seguem enquanto a página está no azul — segunda dobra e "No que eu
+ * posso te ajudar" — e se apagam quando a seção marcada com [data-topo-end]
+ * sai: inteiras com o fim dela abaixo da tela, apagadas quando o fim chega a
+ * FADE_OUT_END da altura da tela (é quando a página vira branca). Apagadas, o
+ * desenho para.
  */
-const FADE_OUT_START = SCALE_END
-const FADE_OUT_END = 1.0
+const FADE_OUT_END = 0.5
 
 /** Tamanho da célula da grade, em px de tela (resolução das curvas). */
 const CELL = 8
@@ -165,10 +165,13 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     let frame = 0
     let last = 0
 
-    // 1 → 0 ao longo da segunda dobra (ver FADE_OUT_*)
+    // 1 → 0 enquanto o fim da seção [data-topo-end] sobe do pé da tela até FADE_OUT_END
     const fade = () => {
-      const r = window.scrollY / (window.innerHeight || 1)
-      return 1 - Math.min(Math.max((r - FADE_OUT_START) / (FADE_OUT_END - FADE_OUT_START), 0), 1)
+      const vh = window.innerHeight || 1
+      const end = document.querySelector('[data-topo-end]')
+      if (!end) return 1
+      const bottom = end.getBoundingClientRect().bottom / vh
+      return Math.min(Math.max((bottom - FADE_OUT_END) / (1 - FADE_OUT_END), 0), 1)
     }
     const applyFade = () => {
       canvas.style.opacity = `${BASE_OPACITY * fade()}`
