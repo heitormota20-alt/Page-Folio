@@ -165,10 +165,12 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     let frame = 0
     let last = 0
 
-    // 1 → 0 enquanto o fim da seção [data-topo-end] sobe do pé da tela até FADE_OUT_END
+    // 1 → 0 enquanto o fim da seção [data-topo-end] sobe do pé da tela até FADE_OUT_END.
+    // Com mais de uma marcada, vale a última (hoje: Ferramentas, depois de Services).
     const fade = () => {
       const vh = window.innerHeight || 1
-      const end = document.querySelector('[data-topo-end]')
+      const ends = document.querySelectorAll('[data-topo-end]')
+      const end = ends[ends.length - 1]
       if (!end) return 1
       const bottom = end.getBoundingClientRect().bottom / vh
       return Math.min(Math.max((bottom - FADE_OUT_END) / (1 - FADE_OUT_END), 0), 1)

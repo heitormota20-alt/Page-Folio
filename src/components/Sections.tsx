@@ -1,5 +1,6 @@
 import { Services } from './Services'
-import { Archive } from './Archive'
+// TESTE: Arquivos Visuais com o template Helix Ribbon. Para voltar, use `import { Archive } from './Archive'` e <Archive />.
+import { ArchiveHelix } from './ArchiveHelix'
 import { Toolkit } from './Toolkit'
 
 const PROJECTS = [
@@ -41,7 +42,7 @@ export function Sections() {
     // então não há bloco opaco subindo nem corte entre a segunda dobra e as seções.
     <div className="relative z-[2] text-ink">
       <Services />
-      <Archive />
+      <ArchiveHelix />
       <Toolkit />
       <section id="sobre" data-theme="light" data-theme-at="0.6" className="border-t border-ink/10 px-6 py-24 sm:px-10 sm:py-32">
         <div className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-[1fr_1.4fr] sm:gap-16">

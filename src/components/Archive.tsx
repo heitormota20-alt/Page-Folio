@@ -12,18 +12,20 @@ type Piece = {
   year: string
   src?: string
   alt?: string
-  portrait?: boolean
 }
 
+// Todas as artes são posts 4:5 (1080×1350), então todo bloco usa essa proporção.
+const ASPECT = '1080 / 1350'
+
 const PIECES: Piece[] = [
-  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-avaliacao.jpg', alt: 'Social media Overclock — Avaliação', portrait: true },
-  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-unico.jpg',    alt: 'Social media Overclock — Por que é único?', portrait: true },
-  { title: 'Em breve',  year: '—',    portrait: false },
-  { title: 'Em breve',  year: '—',    portrait: true  },
-  { title: 'Em breve',  year: '—',    portrait: true  },
-  { title: 'Em breve',  year: '—',    portrait: false },
-  { title: 'Em breve',  year: '—',    portrait: false },
-  { title: 'Em breve',  year: '—',    portrait: true  },
+  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-avaliacao.jpg', alt: 'Social media Overclock — Avaliação' },
+  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-unico.jpg',    alt: 'Social media Overclock — Por que é único?' },
+  { title: 'Em breve',  year: '—' },
+  { title: 'Em breve',  year: '—' },
+  { title: 'Em breve',  year: '—' },
+  { title: 'Em breve',  year: '—' },
+  { title: 'Em breve',  year: '—' },
+  { title: 'Em breve',  year: '—' },
 ]
 
 // 4 colunas: col 0 → [0,4], col 1 → [1,5], col 2 → [2,6], col 3 → [3,7]
@@ -33,8 +35,8 @@ function Card({ piece, gradIndex }: { piece: Piece; gradIndex: number }) {
   const [from, to] = GRADIENTS[gradIndex % GRADIENTS.length]
   return (
     <div
-      className="group relative overflow-hidden rounded-2xl bg-[#0b1a24]"
-      style={{ aspectRatio: piece.portrait ? '3/4' : '4/3' }}
+      className="group relative overflow-hidden bg-[#0b1a24]"
+      style={{ aspectRatio: ASPECT }}
     >
       {piece.src ? (
         <img

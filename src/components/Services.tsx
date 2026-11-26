@@ -68,6 +68,7 @@ export function Services() {
 
   return (
     // data-topo-end: as curvas de nível do fundo seguem até o fim desta seção
+    // (ou da última seção marcada depois dela — ver useTopoLines)
     <section id="ajuda" data-topo-end="">
       <div ref={sceneRef} className="relative h-[320vh] motion-reduce:h-auto">
         <div className="sticky top-0 flex h-[100svh] flex-col overflow-hidden px-6 pt-[16vh] sm:px-10 lg:px-16 motion-reduce:static motion-reduce:h-auto motion-reduce:min-h-[100svh]">

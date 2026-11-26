@@ -53,7 +53,15 @@ export function Toolkit() {
   return (
     // -mt-[45vh]: o título entra enquanto as peças dos Arquivos saem.
     // data-theme: a página volta ao escuro quando esta seção chega a 60% da tela.
-    <section id="ferramentas" data-theme="dark" data-theme-at="0.6" className="-mt-[45vh] motion-reduce:mt-0">
+    // data-topo-end: as curvas de nível do fundo seguem até o fim desta seção
+    // (apagam-se quando "Sobre mim" chega e a página fica branca).
+    <section
+      id="ferramentas"
+      data-theme="dark"
+      data-theme-at="0.6"
+      data-topo-end=""
+      className="-mt-[45vh] motion-reduce:mt-0"
+    >
       {/* Palco alto: 100vh de entrada + 200vh com o painel parado na tela */}
       <div ref={sceneRef} className="relative h-[300vh] motion-reduce:h-auto">
         <div className="pointer-events-none sticky top-0 grid h-[100svh] place-items-center overflow-hidden px-6 sm:px-10 motion-reduce:static motion-reduce:h-auto motion-reduce:gap-12 motion-reduce:overflow-visible motion-reduce:py-24">
