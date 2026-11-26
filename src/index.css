@@ -178,6 +178,49 @@ body {
   }
 }
 
+/* Elementos flutuantes da hero */
+.hero-float {
+  opacity: 0;
+}
+[data-ready] .hero-float-a {
+  animation:
+    hero-float-appear 0.7s cubic-bezier(0.2, 0.75, 0.1, 1) 0.9s both,
+    hero-float-bob-a 4.2s ease-in-out 1.6s infinite;
+}
+[data-ready] .hero-float-b {
+  animation:
+    hero-float-appear 0.7s cubic-bezier(0.2, 0.75, 0.1, 1) 1.15s both,
+    hero-float-bob-b 5.1s ease-in-out 1.85s infinite;
+}
+[data-ready] .hero-float-c {
+  animation:
+    hero-float-appear 0.7s cubic-bezier(0.2, 0.75, 0.1, 1) 1.0s both,
+    hero-float-bob-a 4.7s ease-in-out 1.7s infinite;
+}
+[data-ready] .hero-float-d {
+  animation:
+    hero-float-appear 0.7s cubic-bezier(0.2, 0.75, 0.1, 1) 1.3s both,
+    hero-float-bob-b 5.4s ease-in-out 2.0s infinite;
+}
+@keyframes hero-float-appear {
+  from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes hero-float-bob-a {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+@keyframes hero-float-bob-b {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-float { opacity: 1; }
+  [data-ready] .hero-float-a,
+  [data-ready] .hero-float-b,
+  [data-ready] .hero-float-c { animation: none; }
+}
+
 @keyframes marquee-left {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }

@@ -76,7 +76,7 @@ export function Services() {
               <span className="block font-['Anton',sans-serif] text-[length:clamp(3rem,8.6vw,9.5rem)] leading-[0.95] tracking-[-0.005em] uppercase">
                 No que eu posso
               </span>
-              <span className="-mt-[0.04em] block font-['Instrument_Serif',serif] text-[length:clamp(3.4rem,9.6vw,10.5rem)] leading-[0.9] italic">
+              <span className="-mt-[0.04em] block font-['Instrument_Serif',serif] text-[length:clamp(3.4rem,9.6vw,10.5rem)] leading-[0.9] italic text-[#FF606A]">
                 te ajudar
               </span>
             </h2>

@@ -79,7 +79,7 @@ export function Hero() {
           */}
           <div ref={textRef} className="absolute inset-0">
             <div ref={stageRef} className="hero-type" aria-hidden="true">
-              <p className="hero-greeting hero-fade font-['Inter',sans-serif] leading-none font-light whitespace-nowrap text-[#111] uppercase">
+              <p className="hero-greeting hero-fade font-['Inter',sans-serif] leading-none font-light whitespace-nowrap text-[#FF606A] uppercase">
                 Seja bem vindo ao meu
               </p>
               <svg viewBox="0 0 1920 1080" className="absolute inset-0 h-full w-full overflow-visible">
@@ -118,6 +118,54 @@ export function Hero() {
               style={CHARACTER_STYLE}
               draggable={false}
             />
+          </div>
+
+          {/* Elementos decorativos — acima do personagem */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+
+            {/* Hashtag — esquerda, sobrepondo o "P" do PORTFÓLIO */}
+            <div className="hero-float hero-float-a absolute" style={{ left: '-1%', top: '26%' }}>
+              <svg style={{ width: 'calc(var(--ut) * 220)', height: 'auto' }} viewBox="181 47 130 132" fill="none">
+                <path d="M232,62 C228,100 222,135 214,168" stroke="#FF606A" strokeWidth="22" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M274,58 C270,98 263,132 256,162" stroke="#FF606A" strokeWidth="22" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M196,100 C230,96 265,94 300,93" stroke="#FF606A" strokeWidth="22" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M192,136 C226,133 258,131 292,130" stroke="#FF606A" strokeWidth="22" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {/* Seta curva — direita, sobrepondo o "LIO" do PORTFÓLIO */}
+            <div className="hero-float hero-float-c absolute" style={{ right: '-2%', top: '6%' }}>
+              <svg style={{ width: 'calc(var(--ut) * 240)', height: 'auto' }} viewBox="669 105 120 156" fill="none">
+                <path d="M676,150 C700,112 782,118 780,178 C778,214 752,236 716,236" stroke="#FF606A" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M736,216 L716,236 L738,254" stroke="#FF606A" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {/* Seta loop — centro-esquerda inferior, parcialmente cortada */}
+            <div className="hero-float hero-float-b absolute" style={{ left: '26%', bottom: '-12%' }}>
+              <svg style={{ width: 'calc(var(--ut) * 230)', height: 'auto' }} viewBox="158 411 131 94" fill="none">
+                <path d="M182,498 C165,470 175,432 205,425 C232,418 240,448 222,462 C205,476 195,450 215,438 C240,422 265,440 282,455" stroke="#FF606A" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M259,461 L282,455 L276,432" stroke="#FF606A" strokeWidth="13" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </div>
+
+            {/* Selo circular — canto inferior direito */}
+            <div className="hero-float hero-float-d absolute hidden sm:block" style={{ right: '3%', bottom: '6%' }}>
+              <svg style={{ width: 'calc(var(--ut) * 120)', height: 'auto' }} viewBox="718 343 154 154" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <path id="hero-circ" d="M795,420 m-52,0 a52,52 0 1,1 104,0 a52,52 0 1,1 -104,0"/>
+                </defs>
+                <circle cx="795" cy="420" r="70" fill="#FF606A"/>
+                <text fontFamily="Arial Black, Helvetica, sans-serif" fontWeight="900" fontSize="10" letterSpacing="0.6" fill="#fff">
+                  <textPath href="#hero-circ" startOffset="0">GET STARTED OF FREE • GET STARTED OF FREE •</textPath>
+                </text>
+                <g fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M768,448 C778,430 786,410 790,400 C793,392 786,390 784,398 C782,410 790,430 800,428 C810,426 815,405 822,398"/>
+                  <path d="M808,398 L822,398 L822,412"/>
+                </g>
+              </svg>
+            </div>
+
           </div>
         </section>
 
