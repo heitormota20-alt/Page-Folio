@@ -18,8 +18,8 @@ type Piece = {
 const ASPECT = '1080 / 1350'
 
 const PIECES: Piece[] = [
-  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-avaliacao.jpg', alt: 'Social media Overclock — Avaliação' },
-  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-unico.jpg',    alt: 'Social media Overclock — Por que é único?' },
+  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-avaliacao.webp', alt: 'Social media Overclock — Avaliação' },
+  { title: 'Overclock', year: '2024', src: '/arquivos/overclock-unico.webp',    alt: 'Social media Overclock — Por que é único?' },
   { title: 'Em breve',  year: '—' },
   { title: 'Em breve',  year: '—' },
   { title: 'Em breve',  year: '—' },

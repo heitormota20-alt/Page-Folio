@@ -1,5 +1,4 @@
 import { type RefObject, useEffect, useRef } from 'react'
-import { SCALE_END } from './useHeroScrollScale'
 import { LEVEL_GAP, LEVELS, WAVE_COUNT, makeWaves, topoTime, wavePhase } from './topo'
 
 /*
@@ -469,13 +468,25 @@ export function useHeroField(canvasRef: RefObject<HTMLCanvasElement | null>, { c
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4)
     }
 
-    // só desenha enquanto a home está na tela (o card sobe depois do pouso)
-    const visible = () => !document.hidden && window.scrollY < window.innerHeight * (SCALE_END + 1.05)
+    // Só roda enquanto o card está na tela (ele sobe depois do pouso): fora dela o
+    // laço para de vez e o IntersectionObserver o religa — sem ler scrollY a cada
+    // quadro (ler scrollY força o navegador a refazer o layout da página).
+    let onScreen = true
     const loop = (now: number) => {
+      if (!onScreen) {
+        frame = 0
+        return
+      }
       frame = requestAnimationFrame(loop)
-      if (visible()) render(now)
-      else last = now
+      render(now)
     }
+    const io = new IntersectionObserver((entries) => {
+      onScreen = entries[entries.length - 1].isIntersecting
+      if (onScreen && !frame) {
+        last = performance.now()
+        frame = requestAnimationFrame(loop)
+      }
+    })
     if (reduceMotion) {
       // um quadro parado; redesenha no resize/scroll (a palavra some ao rolar)
       const still = () => render(performance.now())
@@ -502,9 +513,11 @@ export function useHeroField(canvasRef: RefObject<HTMLCanvasElement | null>, { c
     }
     render(performance.now()) // primeiro quadro já (canvas sem alpha começaria preto)
     frame = requestAnimationFrame(loop)
+    io.observe(card)
 
     return () => {
       cancelAnimationFrame(frame)
+      io.disconnect()
       ro.disconnect()
       window.removeEventListener('pointermove', onMouse)
       window.removeEventListener('touchmove', onTouch)

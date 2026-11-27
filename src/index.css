@@ -266,8 +266,11 @@ html.lenis body {
     opacity 0.3s ease calc(var(--d) + 0.4s);
   will-change: transform;
 }
-.about-pop-flat {
-  filter: drop-shadow(0 6px 8px rgb(11 26 36 / 0.18));
+/* a sombra fica no desenho (dentro do que flutua), não em volta: filtro em volta de
+   algo animado é refeito a cada quadro */
+.about-pop-flat .about-pop-float > * {
+  /* luz de cima: 6px para baixo na tela, desfazendo a inclinação da peça (--r) */
+  filter: drop-shadow(calc(sin(var(--r, 0deg)) * 6px) calc(cos(var(--r, 0deg)) * 6px) 8px rgb(11 26 36 / 0.18));
 }
 [data-in] .about-pop {
   transform: rotate(var(--r));
@@ -280,9 +283,10 @@ html.lenis body {
 .about-pop-float {
   animation: about-float 4.5s ease-in-out var(--fd) infinite alternate;
 }
+/* em px (não %): deslocamento em % da própria caixa não roda na placa de vídeo */
 @keyframes about-float {
-  from { translate: 0 -5%; rotate: -2deg; }
-  to   { translate: 0 5%; rotate: 2deg; }
+  from { translate: 0 -6px; rotate: -2deg; }
+  to   { translate: 0 6px; rotate: 2deg; }
 }
 /*
   "Sobre mim" — entrada do texto, da direita (About.tsx). Com [data-shown] na seção:
@@ -334,6 +338,128 @@ html.lenis body {
     transition: none;
   }
   .about-pop-float {
+    animation: none;
+  }
+}
+
+/*
+  Rodapé (Footer.tsx) — entrada ao chegar ([data-shown] no cartão): a frase sobe
+  por trás das suas janelas, a assinatura se escreve da esquerda para a direita
+  (clip-path), o avatar sobe e o resto aparece, um após o outro (--i).
+  `transform` aqui; o `translate` das classes de layout/hover fica livre.
+*/
+.foot-line {
+  transform: translateY(110%);
+  transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1) var(--i);
+}
+.foot-sign {
+  clip-path: inset(0 100% 0 0);
+  transition: clip-path 1.3s cubic-bezier(0.65, 0, 0.35, 1) 0.35s;
+}
+.foot-char {
+  opacity: 0;
+  transform: translateY(16%);
+  transition:
+    transform 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s,
+    opacity 0.6s ease 0.15s;
+}
+.foot-fade {
+  opacity: 0;
+  transform: translateY(1.25rem);
+  transition:
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) var(--i),
+    opacity 0.7s ease var(--i);
+}
+[data-shown] .foot-line,
+[data-shown] .foot-char,
+[data-shown] .foot-fade {
+  opacity: 1;
+  transform: none;
+}
+[data-shown] .foot-sign {
+  clip-path: inset(0 -5% 0 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .foot-line,
+  .foot-char,
+  .foot-fade {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .foot-sign {
+    clip-path: none;
+    transition: none;
+  }
+}
+
+/*
+  Jogo da caneta do rodapé (HireGame.tsx): o próximo nó pulsa; num clique longe,
+  ele treme; a letra fechada aparece preenchida; no fim, o "Fale comigo" pulsa.
+*/
+.hire-pulse {
+  animation: hire-pulse 1.2s ease-out infinite;
+}
+@keyframes hire-pulse {
+  0% { transform: scale(0.7); opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+.hire-miss {
+  animation: hire-miss 0.35s ease;
+}
+@keyframes hire-miss {
+  25% { translate: -6px 0; }
+  50% { translate: 6px 0; }
+  75% { translate: -3px 0; }
+}
+.hire-fill {
+  animation: hire-fill 0.6s ease both;
+}
+@keyframes hire-fill {
+  from { fill-opacity: 0; }
+  to { fill-opacity: 1; }
+}
+.hire-cta-on {
+  animation: hire-cta 1.6s ease-in-out infinite;
+}
+@keyframes hire-cta {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(255 96 106 / 0.65); }
+  50% { box-shadow: 0 0 0 14px rgb(255 96 106 / 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hire-pulse,
+  .hire-miss,
+  .hire-fill,
+  .hire-cta-on {
+    animation: none;
+  }
+}
+
+/*
+  Fora da tela, as animações infinitas param (usePauseOffscreen liga
+  [data-offscreen] nos blocos marcados com [data-pause-offscreen]): ícones
+  girando, peças flutuando, letreiro, pulso do jogo — nada roda escondido. As
+  peças que sobem com a rolagem ([data-piece], floatPieces) pausam enquanto
+  esperam a vez, escondidas ([data-off]).
+*/
+[data-offscreen],
+[data-offscreen] *,
+[data-piece][data-off] * {
+  animation-play-state: paused !important;
+}
+
+/* Pop-up de uma arte de "Arquivos Visuais" (ArtPopup.tsx): surge subindo de leve. */
+.art-pop {
+  animation: art-pop 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes art-pop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .art-pop {
     animation: none;
   }
 }

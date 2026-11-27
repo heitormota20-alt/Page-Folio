@@ -65,6 +65,7 @@ export function Hero() {
       <div
         ref={cardRef}
         data-ready={ready || undefined}
+        data-pause-offscreen=""
         className="hero-card fixed inset-0 z-[1] overflow-hidden bg-white will-change-transform"
       >
         <section id="top" className="absolute inset-0">

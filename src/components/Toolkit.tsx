@@ -43,6 +43,15 @@ const TOOLS: {
 ]
 
 /**
+ * Deslocamento da sombra dos ícones: 18px para baixo NA TELA. O <li> gira com a
+ * rolagem (--rot, posto pelo floatPieces); dentro dele, "para baixo" é o vetor
+ * (0, 18px) girado de −rot.
+ */
+const SHADOW_DROP: CSSProperties = {
+  translate: 'calc(sin(var(--rot, 0deg)) * 18px) calc(cos(var(--rot, 0deg)) * 18px)',
+}
+
+/**
  * Seção "Minhas ferramentas de criação" — cena fixa (ver useToolkitScene): fundo
  * azul (tema padrão da página), título no centro e os ícones 3D das
  * ferramentas subindo amontoados, rodopiando, por cima dele.
@@ -57,6 +66,7 @@ export function Toolkit() {
     // As curvas de nível do fundo seguem por aqui e por "Sobre mim" (que tem o data-topo-end).
     <section
       id="ferramentas"
+      data-pause-offscreen=""
       data-theme="blue"
       data-theme-at="0.6"
       className="-mt-[45vh] motion-reduce:mt-0"
@@ -113,13 +123,14 @@ export function Toolkit() {
                 animationDirection: t.turn < 0 ? 'reverse' : 'normal',
                 animationDelay: `-${(((i * 0.37) % 1) * Math.abs(t.turn)).toFixed(2)}s`,
               }
+              const far = t.depth < 0.5
               const style: CSSProperties = {
                 width: `calc(var(--u) * ${t.size})`,
                 zIndex: near ? 20 : 0,
-                filter: t.depth < 0.5 ? 'blur(1.5px)' : undefined,
-                opacity: t.depth < 0.5 ? 0.75 : 1,
+                opacity: far ? 0.75 : 1,
                 visibility: 'hidden',
               }
+              const flip = t.flip ? '-scale-x-100' : ''
               return (
                 <li
                   key={t.name}
@@ -133,12 +144,15 @@ export function Toolkit() {
                   style={style}
                 >
                   {/*
-                    Três camadas, porque o transform do <li> é do JS (subida + giro da rolagem):
-                    a sombra fica por fora da rotação contínua — assim ela continua embaixo
-                    do ícone em vez de dar a volta com ele; o espelho fica na imagem.
+                    O transform do <li> é do JS (subida + giro da rolagem); dentro, a rotação
+                    contínua. A sombra é uma cópia do ícone (preta, desfocada) girando junto,
+                    e não um filter drop-shadow por fora: filtro em volta de algo que gira é
+                    refeito a cada quadro; assim o desfoque é feito uma vez e a placa de
+                    vídeo só gira. Luz de cima: a sombra cai sempre PARA BAIXO na tela, seja
+                    qual for a inclinação do <li> (SHADOW_DROP). O espelho fica na imagem.
                     width/height reservam o quadrado antes de carregar (o JS mede a peça).
                   */}
-                  <div className="drop-shadow-[0_18px_22px_rgba(0,12,48,0.5)]">
+                  <div aria-hidden="true" className="absolute inset-0" style={SHADOW_DROP}>
                     <div className="animate-spin motion-reduce:animate-none" style={turnStyle}>
                       <img
                         src={`/ferramentas/${t.icon}.webp`}
@@ -148,9 +162,21 @@ export function Toolkit() {
                         loading="lazy"
                         decoding="async"
                         draggable={false}
-                        className={`block h-auto w-full select-none ${t.flip ? '-scale-x-100' : ''}`}
+                        className={`block h-auto w-full opacity-50 brightness-0 blur-[11px] select-none ${flip}`}
                       />
                     </div>
+                  </div>
+                  <div className="relative animate-spin motion-reduce:animate-none" style={turnStyle}>
+                    <img
+                      src={`/ferramentas/${t.icon}.webp`}
+                      alt=""
+                      width={640}
+                      height={640}
+                      loading="lazy"
+                      decoding="async"
+                      draggable={false}
+                      className={`block h-auto w-full select-none ${far ? 'blur-[1.5px]' : ''} ${flip}`}
+                    />
                   </div>
                 </li>
               )

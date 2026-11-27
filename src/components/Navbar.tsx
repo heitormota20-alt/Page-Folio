@@ -2,8 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 const LINKS = [
   { label: 'Sobre mim', href: '#sobre' },
-  { label: 'Projetos', href: '#projetos' },
-  { label: 'Contatos', href: '#contatos' },
+  { label: 'Projetos', href: '#arquivos' }, // os trabalhos do Heitor: Arquivos Visuais
+  { label: 'Contatos', href: '#contatos' }, // o rodapé (Footer.tsx)
 ]
 
 /** Recolhe no hambúrguer depois desta fração do viewport de scroll (2ª dobra)… */

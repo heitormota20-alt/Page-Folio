@@ -70,3 +70,7 @@ const T0 = performance.now()
 export function topoTime(now = performance.now()) {
   return (now - T0) / 1000
 }
+/** O zero de topoTime() no relógio absoluto (ms) — para o worker das curvas. */
+export function topoEpoch() {
+  return performance.timeOrigin + T0
+}

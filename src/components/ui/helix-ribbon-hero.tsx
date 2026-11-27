@@ -27,6 +27,13 @@ export type HelixProject = {
   title: string
   /** Shown after the title in the track's caption ("TITLE, YEAR"). */
   year?: string
+  /** Clickable in the track: calls `onOpen` (e.g. to show its details). */
+  openable?: boolean
+  /**
+   * Animated piece: plays (muted, looping) in the track while on screen. `src` is
+   * still its poster — the ribbon's slices are backgrounds and need an image.
+   */
+  video?: string
 }
 
 export type HelixLineFont = {
@@ -83,6 +90,8 @@ export interface HelixRibbonHeroProps {
   /** Type colour. */
   foreground?: string
   autoPlay?: boolean
+  /** Click on an `openable` project in the track (the button is `el`). */
+  onOpen?: (project: HelixProject, el: HTMLElement) => void
   /** Google Fonts stylesheet, or null to bring your own Anton and Inter Tight. */
   fontHref?: string | null
   className?: string
@@ -217,6 +226,13 @@ const CSS = [
   ".hrh-titem{position:absolute;left:0;top:0;opacity:0;will-change:transform}",
   ".hrh-titem-img{position:relative;overflow:hidden;background:#eee}",
   ".hrh-titem-img img{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}",
+  ".hrh-titem-btn{display:block;padding:0;margin:0;border:0;font:inherit;color:inherit;cursor:pointer;pointer-events:auto}",
+  ".hrh-titem-img video{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}",
+  ".hrh-titem-btn img,.hrh-titem-btn video{transition:transform .6s cubic-bezier(.22,1,.36,1)}",
+  ".hrh-titem-btn:hover img,.hrh-titem-btn:focus-visible img,.hrh-titem-btn:hover video,.hrh-titem-btn:focus-visible video{transform:scale(1.04)}",
+  ".hrh-titem-btn:focus-visible{outline:2px solid currentColor;outline-offset:4px}",
+  ".hrh-plus{position:absolute;right:10px;bottom:10px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#0036b2;color:#fff;font-size:20px;font-weight:400;line-height:1;box-shadow:0 6px 16px -4px rgba(0,20,80,.5);transition:transform .35s cubic-bezier(.22,1,.36,1)}",
+  ".hrh-titem-btn:hover .hrh-plus,.hrh-titem-btn:focus-visible .hrh-plus{transform:rotate(90deg) scale(1.08)}",
   ".hrh-tcap{display:block;height:21px;font-size:11px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;line-height:11px;white-space:nowrap}",
   ".hrh-gt1,.hrh-gt2{display:block;width:max-content;margin:0 auto;white-space:nowrap}",
   ".hrh-gt1{font-family:Anton,Impact,'Arial Narrow',sans-serif;font-weight:400;line-height:.95;letter-spacing:-0.005em;text-transform:uppercase}",
@@ -258,6 +274,7 @@ export default function HelixRibbonHero({
   background = "#f2140c",
   foreground = "#f7f3ee",
   autoPlay = false,
+  onOpen,
   fontHref = FONT_HREF,
   className,
 }: HelixRibbonHeroProps) {
@@ -332,6 +349,21 @@ export default function HelixRibbonHero({
     const slices = Array.from(screw.children) as HTMLDivElement[]
     const cards = grid ? (Array.from(grid.children) as HTMLDivElement[]) : []
     const titems = track ? (Array.from(track.children) as HTMLDivElement[]) : []
+    // videos in the track play only while their item is shown and the scene is on
+    // screen (preload="none": nothing downloads before the first play)
+    const tvideos = titems.map((el) => el.querySelector("video"))
+    const hasVideo = tvideos.some(Boolean)
+    let sceneOn = true
+    const syncVideos = () => {
+      if (!hasVideo) return
+      for (let i = 0; i < tvideos.length; i++) {
+        const v = tvideos[i]
+        if (!v) continue
+        const show = !reduced && sceneOn && titems[i].style.visibility === "visible"
+        if (show && v.paused) v.play().catch(() => {})
+        else if (!show && !v.paused) v.pause()
+      }
+    }
     const n = ribbon.length
     const S = HELIX.slices
 
@@ -706,6 +738,7 @@ export default function HelixRibbonHero({
         el.style.transform = "translate3d(" + px(x) + "," + px(y - 21) + ",0)"
         el.style.filter = k > 0.01 ? "blur(" + (k * 6).toFixed(2) + "px)" : ""
       }
+      syncVideos()
     }
 
     // ---- scroll, autoplay, loop ----
@@ -735,34 +768,48 @@ export default function HelixRibbonHero({
           goal = autoProgress(now - autoT0)
         } else goal = 0
       } else goal = target()
+      const prev = cur
       if (reduced) cur = goal
       else {
         const k = 1 - Math.exp(-dt / (auto ? 40 : 110))
         cur += (goal - cur) * k
         if (Math.abs(goal - cur) < 0.00005) cur = goal
       }
-      draw()
-      raf = visible ? requestAnimationFrame(tick) : 0
+      if (cur !== prev || auto) draw()
+      // settled (caught up with the scroll, no autoplay): sleep until the next scroll
+      raf = visible && (auto || cur !== goal) ? requestAnimationFrame(tick) : 0
+    }
+    const wake = () => {
+      if (visible && !raf) {
+        last = performance.now()
+        raf = requestAnimationFrame(tick)
+      }
     }
     // the loop sleeps while the scene is off screen
     let visible = true
     const io = new IntersectionObserver((es) => {
       visible = es[es.length - 1].isIntersecting
-      if (visible && !raf) {
-        last = performance.now()
-        raf = requestAnimationFrame(tick)
-      }
+      sceneOn = visible
+      syncVideos()
+      wake()
     })
     io.observe(root)
-    const onUser = () => stop()
+    const onUser = () => {
+      stop()
+      wake()
+    }
     const onScroll = () => {
       if (auto && Math.abs(target() - 0) > 0.002) stop()
+      wake()
     }
     window.addEventListener("wheel", onUser, { passive: true })
     window.addEventListener("touchstart", onUser, { passive: true })
     window.addEventListener("keydown", onUser)
     window.addEventListener("scroll", onScroll, { passive: true })
-    const ro = new ResizeObserver(() => layout())
+    const ro = new ResizeObserver(() => {
+      layout()
+      wake()
+    })
     ro.observe(stage)
     layout()
     cur = auto ? 0 : target()
@@ -859,10 +906,32 @@ export default function HelixRibbonHero({
                   {pr.title}
                   {pr.year ? ", " + pr.year : ""}
                 </figcaption>
-                <div className="hrh-titem-img">
-                  {/* eager: the ribbon has already fetched them as backgrounds */}
-                  <img src={pr.src} alt={pr.title} width={720} height={Math.round(720 / aspect)} style={{ maxWidth: "none" }} draggable={false} />
-                </div>
+                {/* the image box stays the item's last child: layout() sizes it */}
+                {onOpen && pr.openable ? (
+                  <button
+                    type="button"
+                    className="hrh-titem-img hrh-titem-btn"
+                    aria-haspopup="dialog"
+                    aria-label={"Ver detalhes: " + pr.title + (pr.year ? ", " + pr.year : "")}
+                    onClick={(e) => onOpen(pr, e.currentTarget)}
+                  >
+                    {pr.video ? (
+                      <video src={pr.video} poster={pr.src} muted loop playsInline preload="none" aria-hidden="true" />
+                    ) : (
+                      <img src={pr.src} alt="" width={720} height={Math.round(720 / aspect)} style={{ maxWidth: "none" }} draggable={false} />
+                    )}
+                    <span className="hrh-plus" aria-hidden="true">+</span>
+                  </button>
+                ) : (
+                  <div className="hrh-titem-img">
+                    {/* eager: the ribbon has already fetched them as backgrounds */}
+                    {pr.video ? (
+                      <video src={pr.video} poster={pr.src} muted loop playsInline preload="none" aria-label={pr.title} />
+                    ) : (
+                      <img src={pr.src} alt={pr.title} width={720} height={Math.round(720 / aspect)} style={{ maxWidth: "none" }} draggable={false} />
+                    )}
+                  </div>
+                )}
               </figure>
             ))}
           </div>

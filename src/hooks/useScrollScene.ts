@@ -74,16 +74,22 @@ export function floatPieces(scene: HTMLElement, opts: FloatOptions = {}) {
         const duration = baseDuration / (0.7 + 0.6 * p.depth)
         const t = (prog - p.delay) / duration
         if (t <= 0 || t >= 1) {
-          p.el.style.visibility = 'hidden' // fora da tela: nem pinta
+          // fora da tela: nem pinta — e [data-off] pausa as animações CSS de dentro
+          // (escondidas, elas saem do compositor e custariam um quadro por frame)
+          p.el.style.visibility = 'hidden'
+          p.el.toggleAttribute('data-off', true)
           continue
         }
         p.el.style.visibility = 'visible'
+        p.el.toggleAttribute('data-off', false)
         // de logo abaixo da tela até sumir por cima
         const y = (1 - t) * (vh + 40) - t * (p.h + 40)
         const dx = Math.sin(t * Math.PI * 1.4 + p.phase) * sway * p.depth
         const x = p.x * panelW - p.w / 2 + dx
         const rot = p.rot + Math.sin(t * Math.PI + p.phase) * wobble + (t - 0.5) * p.spin
         p.el.style.transform = `translate3d(${x}px, ${y}px, 0) rotate(${rot}deg)`
+        // a inclinação, para quem precisa desfazê-la (a sombra dos ícones cai sempre para baixo)
+        p.el.style.setProperty('--rot', `${rot}deg`)
       }
     },
   }
