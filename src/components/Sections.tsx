@@ -1,3 +1,4 @@
+import { About } from './About'
 import { Services } from './Services'
 // TESTE: Arquivos Visuais com o template Helix Ribbon. Para voltar, use `import { Archive } from './Archive'` e <Archive />.
 import { ArchiveHelix } from './ArchiveHelix'
@@ -30,12 +31,6 @@ const PROJECTS = [
   },
 ]
 
-const ABOUT = [
-  'Product designer focado em experimentação e growth.',
-  'Rodo testes de ponta a ponta: hipótese, protótipo, implementação e leitura de dados.',
-  'Só entra no portfólio o que foi medido e sustentou o resultado.',
-]
-
 export function Sections() {
   return (
     // Sem fundo próprio: o conteúdo corre sobre o fundo fixo (curvas de nível),
@@ -44,20 +39,7 @@ export function Sections() {
       <Services />
       <ArchiveHelix />
       <Toolkit />
-      <section id="sobre" data-theme="light" data-theme-at="0.6" className="border-t border-ink/10 px-6 py-24 sm:px-10 sm:py-32">
-        <div className="mx-auto grid max-w-5xl gap-10 sm:grid-cols-[1fr_1.4fr] sm:gap-16">
-          <h2 className="text-[12px] font-medium tracking-[0.22em] text-ink/50 uppercase">
-            Sobre mim
-          </h2>
-          <div className="space-y-5">
-            {ABOUT.map((line) => (
-              <p key={line} className="text-lg leading-relaxed text-ink/80 sm:text-xl">
-                {line}
-              </p>
-            ))}
-          </div>
-        </div>
-      </section>
+      <About />
 
       <section id="projetos" className="border-t border-ink/10 px-6 py-24 sm:px-10 sm:py-32">
         <div className="mx-auto max-w-5xl">

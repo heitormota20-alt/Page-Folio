@@ -160,10 +160,12 @@ ao vivo num `<canvas>` por `src/hooks/useTopoLines.ts`:
   o conjunto desliza na diagonal (`DRIFT_X/Y`);
 - curvas de nível por marching squares; `LEVELS` / `LEVEL_GAP` controlam o
   espaçamento, `SCALE` o tamanho das formas;
-- as linhas seguem enquanto a página está no azul (segunda dobra e "No que eu
-  posso te ajudar") e se apagam quando o fim da seção marcada com
-  `data-topo-end` sobe do pé da tela até a metade (`FADE_OUT_END`) — quando a
-  página vira branca; dali em diante o fundo é liso;
+- as linhas seguem da segunda dobra até "Sobre mim" (no azul e no branco, na
+  cor "ink" do tema) e se apagam quando o fim da última seção marcada com
+  `data-topo-end` (hoje "Sobre mim") sobe do pé da tela até a metade
+  (`FADE_OUT_END`); dali em diante o fundo é liso;
+- uma seção com `data-topo-dim="0.4"` deixa as linhas mais claras (esse fator da
+  intensidade) na proporção da tela que ocupa — hoje "Sobre mim";
 - 24 fps e só enquanto aparecem (entre a hero começar a encolher e sumirem).
   Com `prefers-reduced-motion`, um quadro parado.
 
@@ -181,10 +183,10 @@ linhas, letreiro, menu sobre o fundo) no `@theme` de `index.css` — geram
 azul da palavra "PORTFÓLIO" `#0036b2` + branco (tema padrão). Claro
 (`html.theme-light`): branco `#fff` + azul-marinho `#0b1a24`. Escuro
 (`html.theme-dark`): azul-marinho `#081722` + branco. O tema é **por seção**
-(`usePageThemes`, no `App`): seções marcadas com `data-theme="light|dark"` e
+(`usePageThemes`, no `App`): seções marcadas com `data-theme="blue|light|dark"` e
 `data-theme-at` (fração da tela) — vale a última cujo topo já passou desse ponto;
 antes de todas, o azul. Hoje: Serviços → azul (padrão), Arquivos → claro (50%),
-Ferramentas → escuro (60%), Sobre mim → claro (60%). As variáveis são registradas com `@property`, então
+Ferramentas → azul (60%), Sobre mim → claro (60%). O escuro está sem uso. As variáveis são registradas com `@property`, então
 a troca é uma transição de 0,8s de tudo que usa `bg-page` / `text-ink` (o canvas lê
 a cor a cada quadro). Volta ao azul ao rolar para cima. Títulos de seção usam
 `text-title` (`--color-title`): branco no azul, cinza quente `#84817b` no branco.
@@ -228,12 +230,60 @@ passe `src` em cada item de `PIECES`.
 
 ## Minhas ferramentas de criação — `src/components/Toolkit.tsx`
 
-Cena fixa (`useToolkitScene`, palco de 300vh), no tema escuro: título apagado
-(`text-title/45`) no centro e os cartões das ferramentas subindo amontoados pela
-parte de baixo, rodopiando (`spin`), por cima dele. Usa o mesmo movimento das
-peças dos Arquivos (`floatPieces`, em `useScrollScene`). **A lista de ferramentas
-é provisória** e os cartões mostram siglas nas cores das marcas — para logos
-reais, SVGs em `public/ferramentas/` e `logo` em cada item de `TOOLS`.
+Cena fixa (`useToolkitScene`, palco de 300vh), no azul padrão da página: título
+em duas vozes como Serviços ("MINHAS FERRAMENTAS" em Anton, branco cheio, `text-ink`;
+"de criação" em Instrument Serif itálico coral) no centro e os ícones 3D das
+ferramentas subindo amontoados pela parte de baixo, rodopiando (`spin`), por cima
+dele. Além do giro que segue a rolagem, cada ícone gira sozinho sem parar (CSS,
+`turn` = segundos por volta, negativo = anti-horário); a sombra fica numa camada
+por fora da rotação, sempre para baixo. Usa o mesmo movimento das peças dos Arquivos (`floatPieces`, em
+`useScrollScene`). Ferramentas do Heitor: Photoshop, Figma, After Effects, Canva,
+Blender, Illustrator, Claude e CapCut.
+
+Os ícones são `public/ferramentas/<nome>.webp` (640×640, fundo transparente, todos
+na mesma escala; a sombra é CSS). Saem da folha `assets/design/ferramentas-3d.jpeg`
+(os 8 ícones sobre fundo branco, gerada no Gemini) com
+`python scripts/cut-tool-icons.py` — requer numpy, scipy e pillow. Para trocar a
+arte, substitua a folha mantendo a ordem (Figma, Canva, After Effects, Photoshop /
+Illustrator, CapCut, Blender, Claude) e rode o script de novo; passando uma pasta
+como argumento, ele salva também uma prévia dos ícones sobre o azul da página.
+
+## Sobre mim — `src/components/About.tsx`
+
+No branco (tema claro, como a home do design), com as curvas de nível do fundo,
+em duas colunas: à esquerda o Heitor em 3D desenhando com a caneta
+(`public/sobre/heitor-desenhando.webp`, recortado de
+`assets/design/heitorzinho.png`), grande, encostado na borda e apoiado na base; à
+direita, centralizados na altura, o título em duas vozes ("PRAZER," em Anton,
+"sou o Heitor" em Instrument Serif itálico coral), o cargo discreto ("Designer
+Gráfico Pleno"), a apresentação em Sora leve (300), o botão **Baixar currículo** (no azul da
+página) e os botões redondos do GitHub e do Behance (`PROFILES` — **faltam os
+links**).
+
+Do `lg` em diante a imagem ocupa no máximo a metade esquerda (50vw, ou o que cabe
+em 90% da altura) e os textos ficam na coluna da direita — nunca se encostam.
+Abaixo do `lg`, tudo empilhado e centralizado, com o personagem embaixo.
+
+**Entrada** (CSS `.about-in*` e `.about-char` no `index.css`), repetida a cada
+chegada: quando a seção aparece, o texto vem da direita — as linhas do título
+deslizam dentro das suas janelas, depois o cargo, o texto e os botões, um após o
+outro (`--i`); quando o personagem aparece, ele entra de leve pela esquerda e, logo
+depois, os elementos saem de trás dele. Marcadores separados (`data-shown` na seção,
+`data-in` na caixa do personagem): no celular o personagem fica bem abaixo do texto.
+
+**Elementos saindo de trás do personagem** (`about-pops.tsx` + `.about-pop` no
+`index.css`): ícones 3D do Photoshop e do Illustrator (os de `public/ferramentas/`)
+e, em SVG, a ferramenta de texto, a barra de ferramentas, a caneta de bézier, um
+pincel e cursores. Ficam numa camada atrás da imagem: começam pequenos sobre o
+rosto (escondidos por ele) e, quando 30% do personagem aparece na tela, voam até o
+lugar em volta da cabeça, um após o outro, com um leve quique, e passam a flutuar.
+Saindo da tela, voltam para trás dele — a entrada se repete a cada chegada. As
+posições (em fração da caixa da imagem, `POPS`) evitam o título e o texto em
+qualquer tela. Com movimento reduzido, aparecem parados no lugar.
+
+O botão baixa `public/curriculo-heitor-mota.pdf` (`CV_URL` no componente); para
+atualizar o currículo, substitua o arquivo mantendo o nome. O texto da
+apresentação (`INTRO`) é o texto do Heitor.
 
 **Atenção:** com "reduzir movimento" ligado no sistema (no Windows: Configurações →
 Acessibilidade → Efeitos visuais → Efeitos de animação desligado), os efeitos de

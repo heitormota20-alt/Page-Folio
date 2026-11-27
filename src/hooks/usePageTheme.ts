@@ -2,10 +2,11 @@ import { useEffect } from 'react'
 
 /**
  * Tema da página por seção. Cada seção que muda o tema leva
- *   data-theme="light" | "dark"   e   data-theme-at="0.6"
+ *   data-theme="blue" | "light" | "dark"   e   data-theme-at="0.6"
  * (fração da altura da tela). Vale o tema da ÚLTIMA seção marcada cujo topo já
  * subiu acima de `data-theme-at`; antes de todas, o padrão — o azul da segunda
- * dobra. Claro = html.theme-light, escuro = html.theme-dark (ver index.css); a
+ * dobra ("blue" volta a ele no meio da página). Claro = html.theme-light,
+ * escuro = html.theme-dark (ver index.css); a
  * troca é a transição das variáveis --color-page / --color-ink / --color-title.
  */
 export function usePageThemes() {

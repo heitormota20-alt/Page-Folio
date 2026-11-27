@@ -34,7 +34,7 @@ export function ArchiveHelix() {
     /*
       data-theme="light": a página fica branca quando a seção chega à metade da
       tela — o palco é transparente e corre sobre o fundo fixo (com as curvas de
-      nível, que seguem até o fim do Toolkit), com o texto na cor "ink" do tema
+      nível, que seguem até o fim de "Sobre mim"), com o texto na cor "ink" do tema
       (escura no branco).
       pb-[45vh]: o Toolkit sobe 45vh por cima da seção anterior (-mt-[45vh]);
       esse respiro faz ele entrar só depois que a faixa termina.

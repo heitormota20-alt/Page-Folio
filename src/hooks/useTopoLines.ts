@@ -4,11 +4,10 @@ import { LEVELS, LEVEL_GAP, makeWaves, topoTime, wavePhase } from './topo'
 /** Intensidade das linhas (opacidade do canvas) enquanto aparecem por inteiro. */
 const BASE_OPACITY = 0.14
 /**
- * As linhas seguem enquanto a página está no azul — segunda dobra e "No que eu
- * posso te ajudar" — e se apagam quando a seção marcada com [data-topo-end]
+ * As linhas seguem da segunda dobra até "Sobre mim" (no azul e no branco, na cor
+ * "ink" do tema) e se apagam quando a última seção marcada com [data-topo-end]
  * sai: inteiras com o fim dela abaixo da tela, apagadas quando o fim chega a
- * FADE_OUT_END da altura da tela (é quando a página vira branca). Apagadas, o
- * desenho para.
+ * FADE_OUT_END da altura da tela. Apagadas, o desenho para.
  */
 const FADE_OUT_END = 0.5
 
@@ -166,7 +165,7 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
     let last = 0
 
     // 1 → 0 enquanto o fim da seção [data-topo-end] sobe do pé da tela até FADE_OUT_END.
-    // Com mais de uma marcada, vale a última (hoje: Ferramentas, depois de Services).
+    // Com mais de uma marcada, vale a última (hoje: Sobre mim, depois de Services).
     const fade = () => {
       const vh = window.innerHeight || 1
       const ends = document.querySelectorAll('[data-topo-end]')
@@ -175,8 +174,21 @@ export function useTopoLines(canvasRef: RefObject<HTMLCanvasElement | null>) {
       const bottom = end.getBoundingClientRect().bottom / vh
       return Math.min(Math.max((bottom - FADE_OUT_END) / (1 - FADE_OUT_END), 0), 1)
     }
+    // Seções com [data-topo-dim="0.4"] pedem linhas mais claras: a intensidade vai a
+    // esse fator na proporção da tela que a seção ocupa (gradual ao rolar).
+    const dim = () => {
+      const vh = window.innerHeight || 1
+      let k = 1
+      for (const el of document.querySelectorAll<HTMLElement>('[data-topo-dim]')) {
+        const r = el.getBoundingClientRect()
+        const cover = Math.max(0, Math.min(r.bottom, vh) - Math.max(r.top, 0)) / vh
+        const v = Number(el.dataset.topoDim)
+        if (cover > 0 && v >= 0 && v < 1) k = Math.min(k, 1 - (1 - v) * cover)
+      }
+      return k
+    }
     const applyFade = () => {
-      canvas.style.opacity = `${BASE_OPACITY * fade()}`
+      canvas.style.opacity = `${BASE_OPACITY * fade() * dim()}`
     }
 
     // No topo a hero cobre a tela inteira; depois da segunda dobra as linhas já
