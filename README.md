@@ -237,7 +237,10 @@ passe `src` em cada item de `PIECES`.
 **Hoje o site usa `ArchiveHelix.tsx`** (a fita Helix, `components/ui/helix-ribbon-hero.tsx`).
 As artes com `info` ficam clicáveis na faixa (um "+" azul no canto) e abrem um
 pop-up azul (`ArtPopup.tsx`) ao lado da imagem — no celular, uma folha no pé da
-tela — com **cliente, ano, sobre a peça, intuito e valor para o cliente**; campo
+tela — com **cliente, ano, ferramentas, sobre a peça, intuito e valor para o
+cliente**. As ferramentas (`tools`, ids em `src/components/tools.ts`) aparecem com o
+logo em uma cor só, minimalista como o GitHub e o Behance (`tool-icons.ts`: Simple
+Icons, CC0; o CapCut desenhado à parte), e o nome; campo
 vazio aparece como "A preencher". Fecha no ×, Esc, clique fora ou rolando.
 Os textos das artes são **provisórios** (tirados da própria arte); campo vazio
 aparece como "A preencher".

@@ -26,6 +26,7 @@ const ARTS: Art[] = [
     info: {
       client: 'Overclock',
       year: '2024',
+      tools: ['photoshop', 'blender'],
       description: 'Post para as redes sociais que convida quem já provou o Overclock a deixar sua avaliação.',
       purpose: 'Gerar avaliações de clientes e prova social para a marca.',
       value: '',
@@ -39,6 +40,7 @@ const ARTS: Art[] = [
     info: {
       client: 'Overclock',
       year: '2024',
+      tools: ['photoshop', 'blender'],
       description: 'Post para as redes sociais que responde "Por que Overclock é único?", com os diferenciais do produto em destaque.',
       purpose: 'Apresentar os diferenciais do produto e fortalecer a marca.',
       value: '',
@@ -52,6 +54,7 @@ const ARTS: Art[] = [
     title: 'Copie',
     // PROVISÓRIO — o descritivo é o que se vê na peça; cliente, ano, intuito e valor: o Heitor preenche
     info: {
+      tools: ['photoshop', 'after-effects'], // PROVISÓRIO — a confirmar
       description:
         'Pôster animado de tipografia cinética: a palavra "COPIE" troca de fonte a cada quadro, sobre a ilustração de um rapaz numa fotocopiadora: "Até virar meu".',
     },

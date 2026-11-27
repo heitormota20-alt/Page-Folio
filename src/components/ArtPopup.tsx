@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { TOOL_ICONS } from './tool-icons'
+import { TOOL_NAMES, type ToolId } from './tools'
 
 /** O que aparece no pop-up de uma arte (todos os textos são do Heitor). */
 export interface ArtInfo {
@@ -7,6 +9,8 @@ export interface ArtInfo {
   client?: string
   /** Ano em que a arte foi feita. */
   year?: string
+  /** Ferramentas usadas (aparecem com o logo em uma cor e o nome). */
+  tools?: ToolId[]
   /** Um descritivo leve: o que é a peça. */
   description?: string
   /** O intuito: para que o projeto serviu. */
@@ -158,6 +162,36 @@ export function ArtPopup({ title, info, anchor, onClose }: Props) {
             Ano
           </dt>
           <dd className={DD}>{info.year || <span className={EMPTY}>A preencher</span>}</dd>
+        </div>
+        <div className="col-span-2">
+          <dt className={LABEL}>
+            <span className={DOT} />
+            Ferramentas
+          </dt>
+          <dd className="mt-2">
+            {info.tools?.length ? (
+              <ul className="flex flex-wrap gap-2">
+                {info.tools.map((t) => (
+                  <li key={t} className="flex items-center gap-2 rounded-full bg-white/10 py-1.5 pr-3.5 pl-3 text-[12.5px] font-semibold">
+                    <svg
+                      aria-hidden="true"
+                      width="15"
+                      height="15"
+                      viewBox="0 0 24 24"
+                      {...(TOOL_ICONS[t].stroke
+                        ? { fill: 'none', stroke: 'currentColor', strokeWidth: 2.2, strokeLinejoin: 'round' as const }
+                        : { fill: 'currentColor' })}
+                    >
+                      <path d={TOOL_ICONS[t].d} />
+                    </svg>
+                    {TOOL_NAMES[t]}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className={`text-[14px] ${EMPTY}`}>A preencher</span>
+            )}
+          </dd>
         </div>
       </dl>
 
